@@ -1,9 +1,9 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from ast import literal_eval
 from socket import socket, AF_INET, SOCK_STREAM
 
 
-class BaseComponentServer:
+class BaseComponentServer(ABC):
     host: str
     port: int
 
