@@ -1,4 +1,5 @@
 from BaseComponentServer import BaseComponentServer
+from Mapping.Ports import ServersPorts
 
 
 class OilTankServer(BaseComponentServer):
@@ -6,4 +7,4 @@ class OilTankServer(BaseComponentServer):
         print(f"Received oil")
 
 
-OilTankServer('localhost', 8082).run()
+OilTankServer('localhost', ServersPorts.oil_tank).run()
