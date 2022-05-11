@@ -3,7 +3,7 @@ from Mapping.Ports import ServersPorts
 
 
 class DecanterServer(BaseComponentServer):
-    def process_substance(substances_payload: dict):
+    def process_substance(self, substances_payload: dict):
         print(f"Received substance from reactor")
 
 

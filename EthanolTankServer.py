@@ -3,7 +3,7 @@ from Mapping.Ports import ServersPorts
 
 
 class EthanolTankServer(BaseComponentServer):
-    def process_substance(payload: dict):
+    def process_substance(self, ethanol_payload: dict):
         print("received ethanol from decanter")
 
 

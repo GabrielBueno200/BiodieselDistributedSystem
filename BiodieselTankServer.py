@@ -3,7 +3,7 @@ from Mapping.Ports import ServersPorts
 
 
 class BiodiselTankServer(BaseComponentServer):
-    def process_substance(biodiesel_payload: dict):
+    def process_substance(self, biodiesel_payload: dict):
         print("Received biodielsel from dryer")
 
 

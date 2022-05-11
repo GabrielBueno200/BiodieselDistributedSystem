@@ -3,7 +3,7 @@ from Mapping.Ports import ServersPorts
 
 
 class WashingServer(BaseComponentServer):
-    def process_substance(substance_payload: dict):
+    def process_substance(self, substance_payload: dict):
         print("washing substance...")
 
 

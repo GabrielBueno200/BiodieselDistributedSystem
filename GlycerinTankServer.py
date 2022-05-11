@@ -5,7 +5,7 @@ from Mapping.Ports import ServersPorts
 
 
 class GlycerinTankServer(BaseComponentServer):
-    def process_substance(glycerin_payload: dict):
+    def process_substance(self, glycerin_payload: dict):
         print(f"Received glycerin from decanter")
 
 

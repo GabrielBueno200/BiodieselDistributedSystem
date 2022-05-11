@@ -3,12 +3,12 @@ from Mapping.Ports import ServersPorts
 
 
 class EthanolDryerServer(BaseComponentServer):
-    def process_substance(ethanol_payload: dict) -> None:
+    def process_substance(self, ethanol_payload: dict) -> None:
         print("drying ethanol")
 
 
 class WashingsDryerServer(BaseComponentServer):
-    def process_substance(washing_payload: dict) -> None:
+    def process_substance(self, washing_payload: dict) -> None:
         print("drying substance from washings")
 
 

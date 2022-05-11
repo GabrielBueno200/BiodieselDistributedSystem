@@ -5,8 +5,8 @@ from Mapping.Ports import ServersPorts
 
 
 class ReactorServer(BaseComponentServer):
-    def process_substance(oil_payload: dict):
-        print("received oil")
+    def process_substance(self, oil_payload: dict):
+        print(f"received oil : {oil_payload}")
 
 
-ReactorServer('localhost', ServersPorts.reactor)
+ReactorServer('localhost', ServersPorts.reactor).run()
