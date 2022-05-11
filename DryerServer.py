@@ -1,7 +1,5 @@
-from abc import abstractmethod
-from socket import socket, AF_INET, SOCK_STREAM
-
 from BaseComponentServer import BaseComponentServer
+from Mapping.Ports import ServersPorts
 
 
 class EthanolDryerServer(BaseComponentServer):
@@ -14,5 +12,5 @@ class WashingsDryerServer(BaseComponentServer):
         print("drying substance from washings")
 
 
-EthanolDryerServer('localhost', 8087).run()
-WashingsDryerServer('localhost', 8088).run()
+EthanolDryerServer('localhost', ServersPorts.ethanol_tank_dryer).run()
+WashingsDryerServer('localhost', ServersPorts.washings_dryer).run()

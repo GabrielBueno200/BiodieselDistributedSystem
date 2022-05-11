@@ -1,4 +1,5 @@
 from BaseComponentServer import BaseComponentServer
+from Mapping.Ports import ServersPorts
 
 
 class DecanterServer(BaseComponentServer):
@@ -6,4 +7,4 @@ class DecanterServer(BaseComponentServer):
         print(f"Received substance from reactor")
 
 
-DecanterServer('localhost', 8082).run()
+DecanterServer('localhost', ServersPorts.decanter).run()

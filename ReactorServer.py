@@ -1,6 +1,7 @@
 from socket import socket, AF_INET, SOCK_STREAM
 
 from BaseComponentServer import BaseComponentServer
+from Mapping.Ports import ServersPorts
 
 
 class ReactorServer(BaseComponentServer):
@@ -8,4 +9,4 @@ class ReactorServer(BaseComponentServer):
         print("received oil")
 
 
-ReactorServer('localhost', 8080)
+ReactorServer('localhost', ServersPorts.reactor)

@@ -1,6 +1,5 @@
-from socket import socket, AF_INET, SOCK_STREAM
-
 from BaseComponentServer import BaseComponentServer
+from Mapping.Ports import ServersPorts
 
 
 class BiodiselTankServer(BaseComponentServer):
@@ -8,4 +7,4 @@ class BiodiselTankServer(BaseComponentServer):
         print("Received biodielsel from dryer")
 
 
-BiodiselTankServer('localhost', 8084).run()
+BiodiselTankServer('localhost', ServersPorts.biodiesel_tank).run()
