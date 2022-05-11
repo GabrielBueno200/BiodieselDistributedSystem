@@ -25,7 +25,10 @@ class BaseComponentServer:
                 client_ip, client_port = client_address
                 client_address = f"{client_ip}:{client_port}"
 
-                payload = client_connection.recv(1024).decode()  # dict payload
+                # string payload
+                payload = client_connection.recv(1024).decode()
+
+                # converted string payload to dict
                 deserialized_payload = literal_eval(payload)
 
                 self.process_substance(deserialized_payload)
