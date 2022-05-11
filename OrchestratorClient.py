@@ -17,7 +17,7 @@ class OrchestratrorClient:
             "reactor_server_port": 8080,
             "decanter_server_port": 8081,
 
-            #tanks
+            # tanks
             "oil_tank_server_port":  8082,
             "sodium_hydro_tank_server_port": 8083,
             "ethanol_tank_server_port": 8084,
@@ -28,7 +28,7 @@ class OrchestratrorClient:
             "washings_dryer_server_port": 8087,
             "ethanol_tank_dryer_server_port": 8088,
 
-            #washings
+            # washings
             "first_washing_server_port": 8089,
             "second_washing_server_port": 8090,
             "third_washing_server_port": 8091
@@ -43,5 +43,6 @@ class OrchestratrorClient:
 
         for thread in components_servers_threads:
             thread.start()
+
 
 OrchestratrorClient().start()
