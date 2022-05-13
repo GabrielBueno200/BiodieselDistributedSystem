@@ -13,7 +13,7 @@ class BaseComponentServer(ABC):
         self.port = port
 
     @abstractmethod
-    def process_substance(payload: dict): pass
+    def process_substance(self, payload: dict): pass
 
     @staticmethod
     def connect_client(client_connection: socket, component_server: "BaseComponentServer") -> None:

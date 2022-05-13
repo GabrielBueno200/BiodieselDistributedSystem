@@ -3,7 +3,10 @@ from Enums.Ports import ServersPorts
 
 
 class ReactorServer(BaseComponentServer):
+    is_available = False
+
     def process_substance(self, substance_payload: dict):
+
         substance_type = substance_payload["substance_type"]
         substance_amount = substance_payload["substance_amount"]
 

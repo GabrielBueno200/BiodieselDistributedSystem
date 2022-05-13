@@ -1,34 +1,9 @@
-from random import uniform
 from socket import socket, AF_INET, SOCK_STREAM
 from Enums.Ports import ServersPorts
 from threading import Thread
-from time import sleep
-import json
+from EthanolTankServer import EthanolTankServer
 from Utils.TimeUtilities import set_interval
-
-
-def deposit_oil(oil_tank_socket: socket):
-    oil_amount_by_sec = 0.75
-    remaining_oil = uniform(1, 2)
-    print(f"Total oil = {remaining_oil}l")
-
-    while remaining_oil > 0:
-        oil_to_deposit = 0
-
-        if (remaining_oil - oil_amount_by_sec > 0):
-            oil_to_deposit = oil_amount_by_sec
-        else:
-            oil_to_deposit = remaining_oil
-
-        sleep(1)
-
-        print(f"fueling with: {oil_to_deposit}")
-
-        oil_tank_socket.sendall(json.dumps(
-            {"oil_amount": oil_to_deposit}).encode())
-
-        remaining_oil -= oil_to_deposit
-    print()
+from OilTankServer import OilTankServer
 
 
 class OrchestratrorClient:
@@ -37,9 +12,14 @@ class OrchestratrorClient:
         with socket(AF_INET, SOCK_STREAM) as sock:
             sock.connect(("localhost", component_server_port))
 
-            if (component_server_port == ServersPorts.oil_tank):
-                time_to_deposit_oil = 10
-                set_interval(lambda: deposit_oil(sock), time_to_deposit_oil)
+            if component_server_port == ServersPorts.oil_tank:
+                time_deposit_oil = 10
+                set_interval(lambda: OilTankServer.receive_oil(
+                    sock), time_deposit_oil)
+            elif component_server_port == ServersPorts.ethanol_tank:
+                time_deposit_ethanol = 1
+                set_interval(lambda: EthanolTankServer.receive_ethanol(
+                    sock), time_deposit_ethanol)
 
             while True:
                 pass
@@ -47,7 +27,7 @@ class OrchestratrorClient:
     def start(self) -> None:
         components_servers_threads: list[Thread] = []
 
-        # connect with all component servers iterating in ServersPorts enum, 
+        # connect with all component servers iterating in ServersPorts enum,
         # opening a thread for each of them
         for component_port in ServersPorts:
             component_thread = Thread(target=OrchestratrorClient.connect_component,

@@ -2,9 +2,9 @@ import threading
 from typing import Any, Callable
 
 
-def set_interval(callback: Callable[[Any], None], secs):
+def set_interval(callback: Callable[[Any], None], secs: float):
     """
-    Calls a callback function at specified intervals given by ms 
+    Calls a callback function at specified intervals given by secs 
     """
     def func_wrapper():
         set_interval(callback, secs)
