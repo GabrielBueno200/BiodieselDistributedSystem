@@ -1,7 +1,7 @@
 import json
 from random import uniform
 from Enums.Ports import ServersPorts
-from Enums.Substance import Substance
+from Enums.Substance import SubstanceType
 from Utils.TimeUtilities import set_interval
 from socket import socket, AF_INET, SOCK_STREAM
 from BaseComponentServer import BaseComponentServer
@@ -39,7 +39,7 @@ class OilTankServer(BaseComponentServer):
                 reactor_sock.connect(("localhost", ServersPorts.reactor))
 
                 payload_to_reactor = {
-                    "substance_type": Substance.OIL,
+                    "substance_type": SubstanceType.OIL,
                     "substance_amount": oil_to_transfer
                 }
 

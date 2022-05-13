@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import json
 from socket import socket, AF_INET, SOCK_STREAM
 from threading import Thread
+from Models.ComponentState import ComponentState
 
 
 class BaseComponentServer(ABC):
@@ -13,7 +14,7 @@ class BaseComponentServer(ABC):
         self.port = port
 
     @abstractmethod
-    def process_substance(self, payload: dict): pass
+    def process_substance(self, payload: dict) -> ComponentState or None: pass
 
     @staticmethod
     def connect_client(client_connection: socket, component_server: "BaseComponentServer") -> None:
@@ -33,10 +34,10 @@ class BaseComponentServer(ABC):
                 data_to_response = component_server.process_substance(
                     deserialized_payload)
 
-                if data_to_response is not None:
-                    client_connection.sendall(data_to_response)
+                if data_to_response and client_connection:
+                    client_connection.sendall(str(data_to_response).encode())
 
-    def start_client_thread(self, client_connection: "socket") -> None:
+    def start_client_thread(self, client_connection: socket) -> None:
         client_thread = Thread(
             target=BaseComponentServer.connect_client,
             args=(client_connection, self)
