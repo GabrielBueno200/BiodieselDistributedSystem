@@ -34,7 +34,7 @@ class BaseComponentServer(ABC):
                 data_to_response = component_server.process_substance(
                     deserialized_payload)
 
-                if data_to_response and client_connection:
+                if data_to_response:
                     client_connection.sendall(str(data_to_response).encode())
 
     def start_client_thread(self, client_connection: socket) -> None:
