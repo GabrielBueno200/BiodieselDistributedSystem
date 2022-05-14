@@ -3,7 +3,6 @@ from socket import socket, AF_INET, SOCK_STREAM
 from Enums.Ports import ServersPorts
 from threading import Thread
 from EthanolTankServer import EthanolTankServer
-from Models.ComponentState import ComponentState
 from SodiumHydroxideTank import SodiumHydroxideServer
 from OilTankServer import OilTankServer
 from Utils.TimeUtilities import set_interval
@@ -33,7 +32,7 @@ class OrchestratrorClient:
                     sock), time_deposit_sodium)
 
             while True:
-                response = sock.recv(1024).decode('utf-8')
+                response = sock.recv(1024).decode()
                 OrchestratrorClient.components_state[component_name] = json.loads(
                     response)
 

@@ -12,3 +12,7 @@ def set_interval(callback: Callable[[Any], None], secs: float):
     t = threading.Timer(secs, func_wrapper)
     t.start()
     return t
+
+
+def set_timeout(callback: Callable[[Any], None], secs: float):
+    threading.Timer(secs, callback)

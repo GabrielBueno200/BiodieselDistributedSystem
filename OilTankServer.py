@@ -8,8 +8,8 @@ from BaseComponentServer import BaseComponentServer
 
 
 class OilTankServer(BaseComponentServer):
-    remaining_oil: int = 0  # l
-    oil_amount_by_sec = 0.75  # l/s
+    remaining_oil: int = 0
+    oil_outflow: float = 0.75
 
     def __init__(self, host: str, port: int):
         super().__init__(host, port)
@@ -23,15 +23,15 @@ class OilTankServer(BaseComponentServer):
         oil_amount = oil_payload["oil_amount"]
         self.remaining_oil += oil_amount
 
-        print(
+        self.log_info(
             f"Received {oil_amount}l of oil | Total in tank: {self.remaining_oil}")
 
     def transfer_oil_to_reactor(self):
         if self.remaining_oil > 0:
             oil_to_transfer = 0
 
-            if (self.remaining_oil - self.oil_amount_by_sec > 0):
-                oil_to_transfer = self.oil_amount_by_sec
+            if (self.remaining_oil - self.oil_outflow > 0):
+                oil_to_transfer = self.oil_outflow
             else:
                 oil_to_transfer = self.remaining_oil
 
@@ -45,7 +45,9 @@ class OilTankServer(BaseComponentServer):
 
                 reactor_sock.sendall(json.dumps(payload_to_reactor).encode())
 
-            print(f"transfering to reactor: {oil_to_transfer}l")
+                reactor_sock.recv(1024)
+
+            self.log_info(f"transfering to reactor: {oil_to_transfer}l")
 
             self.remaining_oil -= oil_to_transfer
 

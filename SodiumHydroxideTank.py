@@ -8,7 +8,7 @@ class SodiumHydroxideServer(BaseComponentServer):
     def process_substance(self, sodium_payload: dict):
         sodium_amount = sodium_payload["sodium_amount"]
 
-        print(f"Received {sodium_amount}l of hydroxide sodium")
+        self.log_info(f"Received {sodium_amount}l of hydroxide sodium")
 
     @staticmethod
     def receive_sodium(sodium_tank_client_socket: socket):
