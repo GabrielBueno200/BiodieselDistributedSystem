@@ -2,6 +2,7 @@ import json
 from random import uniform
 from Enums.Ports import ServersPorts
 from Enums.Substance import SubstanceType
+from Models.ComponentState import ComponentState
 from Utils.TimeUtilities import set_interval
 from socket import socket, AF_INET, SOCK_STREAM
 from BaseComponentServer import BaseComponentServer
@@ -24,7 +25,9 @@ class OilTankServer(BaseComponentServer):
         self.remaining_oil += oil_amount
 
         self.log_info(
-            f"Received {oil_amount}l of oil | Total in tank: {self.remaining_oil}")
+            f"Received {oil_amount}l of oil")
+
+        return ComponentState(self.remaining_oil)
 
     def transfer_oil_to_reactor(self):
         if self.remaining_oil > 0:
@@ -45,11 +48,15 @@ class OilTankServer(BaseComponentServer):
 
                 reactor_sock.sendall(json.dumps(payload_to_reactor).encode())
 
-                reactor_sock.recv(1024)
+                reactor_response = reactor_sock.recv(1024).decode()
 
-            self.log_info(f"transfering to reactor: {oil_to_transfer}l")
+                if reactor_response:
+                    reactor_state = json.loads(reactor_response)
 
-            self.remaining_oil -= oil_to_transfer
+                    if not reactor_state["is_busy"]:
+                        self.log_info(
+                            f"transfering to reactor: {oil_to_transfer}l")
+                        self.remaining_oil -= oil_to_transfer
 
     @staticmethod
     def receive_oil(oil_tank_client_socket: socket):

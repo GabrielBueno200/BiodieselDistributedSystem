@@ -2,6 +2,7 @@ import json
 from threading import Thread
 from abc import ABC, abstractmethod
 from socket import socket, AF_INET, SOCK_STREAM
+
 from Models.ComponentState import ComponentState
 
 
@@ -16,7 +17,7 @@ class BaseComponentServer(ABC):
         self.clients = []
 
     @abstractmethod
-    def process_substance(self, payload: dict) -> dict or None: pass
+    def process_substance(self, payload: dict) -> ComponentState or None: pass
 
     @staticmethod
     def connect_client(client_connection: socket, component_server: "BaseComponentServer") -> None:

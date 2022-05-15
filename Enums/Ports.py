@@ -4,7 +4,7 @@ from Utils.EnumUtilities import EnumDirectValueMeta
 
 class ServersPorts(Enum, metaclass=EnumDirectValueMeta):
     reactor = 8080
-    # decanter = 8081
+    decanter = 8081
 
     # tanks
     oil_tank = 8082

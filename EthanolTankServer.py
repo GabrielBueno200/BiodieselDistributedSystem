@@ -47,11 +47,15 @@ class EthanolTankServer(BaseComponentServer):
 
                 reactor_sock.sendall(json.dumps(payload_to_reactor).encode())
 
-                reactor_sock.recv(1024)
+                reactor_response = reactor_sock.recv(1024).decode()
 
-            self.log_info(f"transfering to reactor: {ethanol_to_transfer}l")
+                if reactor_response:
+                    reactor_state = json.loads(reactor_response)
 
-            self.remaining_ethanol -= ethanol_to_transfer
+                    if not reactor_state["is_busy"]:
+                        self.log_info(
+                            f"transfering to reactor: {ethanol_to_transfer}l")
+                        self.remaining_ethanol -= ethanol_to_transfer
 
     @staticmethod
     def receive_ethanol(ethanol_tank_client_socket: socket):
