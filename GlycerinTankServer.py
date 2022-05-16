@@ -1,6 +1,5 @@
 from BaseComponentServer import BaseComponentServer
 from Enums.Ports import ServersPorts
-from Models.ComponentState import ComponentState
 
 
 class GlycerinTankServer(BaseComponentServer):
@@ -9,7 +8,7 @@ class GlycerinTankServer(BaseComponentServer):
     def process_substance(self, glycerin_payload: dict):
         self.receive_gliceryn(glycerin_payload["glycerin_amount"])
 
-        return ComponentState(self.remaining_glycerin)
+        return {"occupied_capacity": self.remaining_glycerin}
 
     def receive_gliceryn(self, glycerin_amount: float):
         self.remaining_glycerin += glycerin_amount

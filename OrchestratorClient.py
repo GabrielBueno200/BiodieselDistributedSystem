@@ -1,3 +1,4 @@
+from collections import defaultdict
 import json
 import os
 from socket import socket, AF_INET, SOCK_STREAM
@@ -9,7 +10,6 @@ from SodiumHydroxideTank import SodiumHydroxideServer
 from OilTankServer import OilTankServer
 from Utils.GeneralUtilities import clear_window
 from Utils.TimeUtilities import set_interval
-from collections import defaultdict
 import pandas as pd
 
 
@@ -37,31 +37,7 @@ class OrchestratrorClient:
                     sock), time_deposit_sodium)
 
             while True:
-                response = sock.recv(1024).decode()
-                OrchestratrorClient.components_state[component_name] = json.loads(
-                    response)
-
-    def show_components_state(self):
-        clear_window()
-        print("\n"*10)
-
-        table_dict = {}
-        columns_name = []
-
-        for states in self.components_state.values():
-            columns_name = [state_name for state_name in states.keys()
-                            if state_name not in columns_name]
-        columns_name = ["component_name", *columns_name]
-
-        table_dict = defaultdict(list, table_dict)
-
-        for component_name, state in self.components_state.items():
-            table_dict["component_name"].append(component_name)
-            for state_name, state_value in state.items():
-                table_dict[state_name].append(state_value)
-
-        terminal_width = os.get_terminal_size().columns
-        print(pd.DataFrame(table_dict).to_string().center(terminal_width))
+                sock.recv(1024).decode()
 
     def start(self) -> None:
         components_servers_threads: list[Thread] = []
@@ -74,8 +50,6 @@ class OrchestratrorClient:
 
             components_servers_threads.append(component_thread)
             component_thread.start()
-
-        set_interval(self.show_components_state, 1)
 
         [thread.join() for thread in components_servers_threads]
 

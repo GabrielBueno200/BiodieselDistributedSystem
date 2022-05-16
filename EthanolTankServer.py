@@ -20,13 +20,13 @@ class EthanolTankServer(BaseComponentServer):
         set_interval(self.transfer_ethanol_to_reactor,
                      time_transfer_ethanol_reactor)
 
-    def process_substance(self, ethanol_payload: dict) -> ComponentState or None:
+    def process_substance(self, ethanol_payload: dict) -> dict or None:
         ethanol_amount = ethanol_payload["ethanol_amount"]
         self.remaining_ethanol += ethanol_amount
 
         self.log_info(f"Received {ethanol_amount}l of ethanol")
 
-        return ComponentState(self.remaining_ethanol)
+        return {"occupied_capacity": self.remaining_ethanol, "is_busy": True}
 
     def transfer_ethanol_to_reactor(self):
         if self.remaining_ethanol > 0:
@@ -52,7 +52,7 @@ class EthanolTankServer(BaseComponentServer):
                 if reactor_response:
                     reactor_state = json.loads(reactor_response.decode())
 
-                    if not reactor_state["is_busy"]:
+                    if not reactor_state["is_busy"] and not reactor_state["max_substance_reached"]:
                         self.log_info(
                             f"transfering to reactor: {ethanol_to_transfer}l")
                         self.remaining_ethanol -= ethanol_to_transfer

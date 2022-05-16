@@ -1,15 +1,14 @@
 from BaseComponentServer import BaseComponentServer
 from Enums.Ports import ServersPorts
-from Models.ComponentState import ComponentState
 
 
 class BiodiselTankServer(BaseComponentServer):
-    total_biodiesel = 0
+    remaining_biodiesel = 0
 
     def process_substance(self, biodiesel_payload: dict):
         self.receive_biodiesel(biodiesel_payload["biodiesel_amount"])
 
-        return ComponentState(self.total_biodiesel)
+        return {"occupied_capacity": self.remaining_biodiesel}
 
     def receive_biodiesel(self, biodiesel_amount: float):
         self.total_biodiesel += biodiesel_amount

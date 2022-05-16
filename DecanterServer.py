@@ -3,7 +3,6 @@ from socket import AF_INET, SOCK_STREAM, socket
 from BaseComponentServer import BaseComponentServer
 from Enums.Ports import ServersPorts
 from Enums.Substance import SubstanceType
-from Models.ComponentState import ComponentState
 from Utils.TimeUtilities import set_timeout
 
 
@@ -13,18 +12,19 @@ class DecanterServer(BaseComponentServer):
     is_resting = False
 
     def process_substance(self, substances_payload: dict):
-        substances_amount = substances_payload["substances_amount"]
+        # if not self.is_resting:
+        #     self.remaining_substances += substances_amount
+        #     self.is_resting = True
+        #     # set_timeout(self.start_resting, secs=5)
 
-        if not self.is_resting:
-            self.remaining_substances += substances_amount
-            self.is_resting = True
-            set_timeout(self.start_resting, secs=5)
+        #     self.log_info(
+        #         f"Received {substances_amount}l of sodium, ethanol and oil from reactor")
 
-            self.log_info(
-                f"Received {substances_amount}l of sodium, ethanol and oil from reactor")
-            return ComponentState(self.remaining_substances)
-        else:
-            return ComponentState(self.remaining_substances, is_busy=True)
+        #     return {"occupied_capacity": self.remaining_substances, "is_busy": False}
+        # else:
+        #     return {"occupied_capacity": self.remaining_substances, "is_busy": True}
+
+        return {"occupied_capacity": self.remaining_substances, "is_busy": False}
 
     def start_resting(self):
         glycerin_amount = self.remaining_substances * 0.01
@@ -48,6 +48,8 @@ class DecanterServer(BaseComponentServer):
 
             component_sock.sendall(json.dumps(
                 {f"{substance}_amount": substance_amount}).encode())
+
+            self.remaining_substances -= substance_amount
 
             component_sock.recv(1024)
 

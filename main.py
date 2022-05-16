@@ -1,15 +1,16 @@
 import subprocess
 from threading import Thread
+import time
 
 scripts = [
-    "python ./DecanterServer.py",
-    "python ./ReactorServer.py",
-    "python ./OilTankServer.py",
+    "python ./WashingServers.py",
     "python ./EthanolTankServer.py",
     "python ./SodiumHydroxideTank.py",
     "python ./GlycerinTankServer.py",
     "python ./BiodieselTankServer.py",
-    "python ./WashingServers.py",
+    "python ./ReactorServer.py",
+    "python ./DecanterServer.py",
+    "python ./OilTankServer.py",
     # "python ./DryersServers.py"
 ]
 

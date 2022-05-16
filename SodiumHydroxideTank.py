@@ -3,7 +3,6 @@ from socket import AF_INET, SOCK_STREAM, socket
 from BaseComponentServer import BaseComponentServer
 from Enums.Ports import ServersPorts
 from Enums.Substance import SubstanceType
-from Models.ComponentState import ComponentState
 from Utils.TimeUtilities import set_interval
 
 
@@ -26,7 +25,7 @@ class SodiumHydroxideServer(BaseComponentServer):
 
         self.log_info(f"Received {sodium_amount}l of hydroxide sodium")
 
-        return ComponentState(self.remaining_sodium)
+        return {"occupied_capacity": self.remaining_sodium}
 
     def transfer_sodium_to_reactor(self):
         if self.remaining_sodium > 0:
@@ -37,25 +36,25 @@ class SodiumHydroxideServer(BaseComponentServer):
             else:
                 sodium_to_transfer = self.remaining_sodium
 
-            with socket(AF_INET, SOCK_STREAM) as reactor_sock:
-                reactor_sock.connect(("localhost", ServersPorts.reactor))
+            reactor_sock = socket(AF_INET, SOCK_STREAM)
+            reactor_sock.connect(("localhost", ServersPorts.reactor))
 
-                payload_to_reactor = {
-                    "substance_type": SubstanceType.SODIUM,
-                    "substance_amount": sodium_to_transfer
-                }
+            payload_to_reactor = {
+                "substance_type": SubstanceType.SODIUM,
+                "substance_amount": sodium_to_transfer
+            }
 
-                reactor_sock.sendall(json.dumps(payload_to_reactor).encode())
+            reactor_sock.sendall(json.dumps(payload_to_reactor).encode())
 
-                reactor_response = reactor_sock.recv(1024)
+            reactor_response = reactor_sock.recv(1024)
 
-                if reactor_response:
-                    reactor_state = json.loads(reactor_response.decode())
+            if reactor_response:
+                reactor_state = json.loads(reactor_response.decode())
 
-                    if not reactor_state["is_busy"]:
-                        self.log_info(
-                            f"transfering to reactor: {sodium_to_transfer}l")
-                        self.remaining_sodium -= sodium_to_transfer
+                if not reactor_state["is_busy"] and not reactor_state["max_substance_reached"]:
+                    self.log_info(
+                        f"transfering to reactor: {sodium_to_transfer}l")
+                    self.remaining_sodium -= sodium_to_transfer
 
     @staticmethod
     def receive_sodium(sodium_tank_client_socket: socket):

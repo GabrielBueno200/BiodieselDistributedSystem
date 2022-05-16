@@ -2,8 +2,6 @@ import json
 from threading import Thread
 from abc import ABC, abstractmethod
 from socket import socket, AF_INET, SOCK_STREAM
-import traceback
-from Models.ComponentState import ComponentState
 
 
 class BaseComponentServer(ABC):
@@ -14,28 +12,21 @@ class BaseComponentServer(ABC):
     def __init__(self, host: str, port: int) -> None:
         self.host = host
         self.port = port
-        self.clients = []
 
     @abstractmethod
-    def process_substance(self, payload: dict) -> ComponentState or None: pass
-
-    def broadcast_response(self, response_data: ComponentState) -> None:
-        for client in self.clients:
-            client.sendall(str(response_data).encode())
+    def process_substance(self, payload: dict) -> None: pass
 
     def log_info(self, info: str):
         print(f"{self.__class__.__name__}: {info}")
 
     @staticmethod
     def connect_client(client_connection: socket, component_server: "BaseComponentServer") -> None:
+
         with client_connection:
-            try:
-                while True:
-                    payload = client_connection.recv(1024)
+            while True:
+                payload = client_connection.recv(1024)
 
-                    if not payload:
-                        break
-
+                if payload:
                     # string payload
                     serialized_payload = payload.decode()
 
@@ -45,14 +36,11 @@ class BaseComponentServer(ABC):
                     response_data = component_server.process_substance(
                         deserialized_payload)
 
-                    if response_data:
-                        component_server.broadcast_response(response_data)
-            except Exception as ex:
-                component_server.log_info(ex)
-                component_server.log_info(
-                    f"Some error has occurred: {traceback.print_stack()}")
+                    component_server.log_info(response_data)
 
-        component_server.clients.remove(client_connection)
+                    if response_data:
+                        client_connection.sendall(
+                            json.dumps(response_data).encode())
 
     def start_client_thread(self, client_connection: socket) -> None:
         client_thread = Thread(
@@ -70,5 +58,4 @@ class BaseComponentServer(ABC):
             while True:
                 client_connection = sock.accept()[0]
 
-                self.clients.append(client_connection)
                 self.start_client_thread(client_connection)
