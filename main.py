@@ -8,7 +8,9 @@ scripts = [
     "python ./EthanolTankServer.py",
     "python ./SodiumHydroxideTank.py",
     "python ./GlycerinTankServer.py",
-    "python ./BiodieselTankServer.py"
+    "python ./BiodieselTankServer.py",
+    "python ./WashingServers.py",
+    # "python ./DryersServers.py"
 ]
 
 for script in scripts:

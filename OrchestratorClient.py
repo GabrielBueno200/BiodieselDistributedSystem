@@ -1,4 +1,5 @@
 import json
+import os
 from socket import socket, AF_INET, SOCK_STREAM
 from typing import Any
 from Enums.Ports import ServersPorts
@@ -42,14 +43,15 @@ class OrchestratrorClient:
 
     def show_components_state(self):
         clear_window()
+        print("\n"*10)
 
         table_dict = {}
-        columns = []
+        columns_name = []
 
         for states in self.components_state.values():
-            columns = [state_name for state_name in states.keys()
-                       if state_name not in columns]
-        columns = ["component_name", *columns]
+            columns_name = [state_name for state_name in states.keys()
+                            if state_name not in columns_name]
+        columns_name = ["component_name", *columns_name]
 
         table_dict = defaultdict(list, table_dict)
 
@@ -58,7 +60,8 @@ class OrchestratrorClient:
             for state_name, state_value in state.items():
                 table_dict[state_name].append(state_value)
 
-        print(pd.DataFrame(table_dict))
+        terminal_width = os.get_terminal_size().columns
+        print(pd.DataFrame(table_dict).to_string().center(terminal_width))
 
     def start(self) -> None:
         components_servers_threads: list[Thread] = []

@@ -1,12 +1,14 @@
+from threading import Thread
 from BaseComponentServer import BaseComponentServer
 from Enums.Ports import ServersPorts
 
 
 class WashingServer(BaseComponentServer):
-    def process_substance(self, substance_payload: dict):
+    def process_substance(self, solution_payload: dict):
+        self.log_info(f"received solution: {solution_payload}")
         print("washing substance...")
 
 
-WashingServer('localhost', ServersPorts.first_washing).run()
-WashingServer('localhost', ServersPorts.second_washing).run()
-WashingServer('localhost', ServersPorts.third_washing).run()
+Thread(target=WashingServer('localhost', ServersPorts.first_washing).run).start()
+Thread(target=WashingServer('localhost', ServersPorts.second_washing).run).start()
+Thread(target=WashingServer('localhost', ServersPorts.third_washing).run).start()

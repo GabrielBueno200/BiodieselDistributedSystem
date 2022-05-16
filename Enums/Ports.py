@@ -18,6 +18,6 @@ class ServersPorts(Enum, metaclass=EnumDirectValueMeta):
     # ethanol_tank_dryer = 8088
 
     # washings
-    # first_washing = 8089
-    # second_washing = 8090
-    # third_washing = 8091
+    first_washing = 8089
+    second_washing = 8090
+    third_washing = 8091

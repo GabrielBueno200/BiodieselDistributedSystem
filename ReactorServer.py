@@ -1,4 +1,6 @@
+import json
 from socket import AF_INET, SOCK_STREAM, socket
+from threading import Timer
 from BaseComponentServer import BaseComponentServer
 from Enums.Ports import ServersPorts
 from Enums.Substance import SubstanceType
@@ -15,35 +17,64 @@ class ReactorServer(BaseComponentServer):
         SubstanceType.ETHANOL: 0
     }
 
+    remaining_substances = 0
+    substances_outflow = 1
+    is_processing = False
+    processing_thread: Timer = None
+
     def process_substance(self, substance_payload: dict):
         substance_type = substance_payload["substance_type"]
         substance_amount = substance_payload["substance_amount"]
 
-        occupied_capacity = sum(self.substances_amount.values())
-        is_busy = self.check_processing_start()
+        self.remaining_substances = sum(self.substances_amount.values())
+        self.is_processing = self.check_processing_start()
 
-        if not is_busy:
+        if not self.is_processing:
             self.substances_amount[substance_type] += substance_amount
-            occupied_capacity += self.substances_amount[substance_type]
+            self.remaining_substances += self.substances_amount[substance_type]
 
             self.log_info(f"received {substance_amount}l of {substance_type}")
-            return ComponentState(occupied_capacity)
+            return ComponentState(self.remaining_substances)
         else:
-            set_timeout(self.start_processing, secs=1)
-            return ComponentState(occupied_capacity=0, is_busy=is_busy)
-
-    def start_processing(self):
-        self.substances_amount = {x: 0 for x in self.substances_amount}
-
-        with socket(AF_INET, SOCK_STREAM) as decanter_sock:
-            decanter_sock.sendall(str({"processed_substance_amount": 5}))
+            return ComponentState(occupied_capacity=self.remaining_substances, is_busy=True)
 
     def check_processing_start(self):
         has_max_oil = self.substances_amount[SubstanceType.OIL] >= self.max_capacity / 2
         has_max_sodium = self.substances_amount[SubstanceType.SODIUM] >= self.max_capacity / 4
         has_max_ethanol = self.substances_amount[SubstanceType.ETHANOL] >= self.max_capacity / 4
 
-        return has_max_oil and has_max_ethanol and has_max_sodium
+        can_process = has_max_oil and has_max_ethanol and has_max_sodium
+
+        if not self.is_processing and can_process:
+            self.processing_thread = set_timeout(
+                self.transfer_substances_to_decanter, secs=1)
+
+        return can_process
+
+    def transfer_substances_to_decanter(self):
+        if self.remaining_substances > 0:
+            substances_to_transfer = 0
+
+            if (self.remaining_substances - self.substances_outflow > 0):
+                substances_to_transfer = self.substances_outflow
+            else:
+                substances_to_transfer = self.remaining_substances
+
+            with socket(AF_INET, SOCK_STREAM) as decanter_sock:
+                decanter_sock.connect(("localhost", ServersPorts.decanter))
+
+                decanter_sock.sendall(json.dumps(
+                    {"substances_amount": substances_to_transfer}).encode())
+
+                decanter_response = decanter_sock.recv(1024)
+
+                if decanter_response:
+                    decanter_state = json.loads(decanter_response.decode())
+
+                    if not decanter_state["is_busy"]:
+                        self.log_info(
+                            f"transfering to decanter: {substances_to_transfer}l")
+                        self.remaining_substances -= substances_to_transfer
 
 
 ReactorServer('localhost', ServersPorts.reactor).run()

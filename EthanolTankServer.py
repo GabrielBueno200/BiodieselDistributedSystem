@@ -47,10 +47,10 @@ class EthanolTankServer(BaseComponentServer):
 
                 reactor_sock.sendall(json.dumps(payload_to_reactor).encode())
 
-                reactor_response = reactor_sock.recv(1024).decode()
+                reactor_response = reactor_sock.recv(1024)
 
                 if reactor_response:
-                    reactor_state = json.loads(reactor_response)
+                    reactor_state = json.loads(reactor_response.decode())
 
                     if not reactor_state["is_busy"]:
                         self.log_info(
