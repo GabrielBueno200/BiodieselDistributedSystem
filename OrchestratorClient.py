@@ -42,8 +42,6 @@ class OrchestratrorClient:
                     response)
 
     def show_components_state(self):
-        clear_window()
-
         columns_to_show = ["occupied_capacity", "is_busy"]
 
         for component_name, state in self.components_state.items():
@@ -52,6 +50,8 @@ class OrchestratrorClient:
                 if column in state.keys():
                     print(f"{column}: {state[column]}", end=" | ")
             print()
+
+        print()
 
     def start(self) -> None:
         components_servers_threads: list[Thread] = []
@@ -65,7 +65,7 @@ class OrchestratrorClient:
             components_servers_threads.append(component_thread)
             component_thread.start()
 
-        set_interval(self.show_components_state, secs = 1)
+        set_interval(self.show_components_state, secs=1)
 
         [thread.join() for thread in components_servers_threads]
 
