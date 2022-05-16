@@ -26,7 +26,10 @@ class EthanolTankServer(BaseComponentServer):
 
         self.log_info(f"Received {ethanol_amount}l of ethanol")
 
-        return {"occupied_capacity": self.remaining_ethanol, "is_busy": True}
+        return self.get_state()
+
+    def get_state(self):
+        return {"occupied_capacity": self.remaining_ethanol}
 
     def transfer_ethanol_to_reactor(self):
         if self.remaining_ethanol > 0:

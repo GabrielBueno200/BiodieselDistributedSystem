@@ -26,6 +26,9 @@ class DecanterServer(BaseComponentServer):
 
         return {"occupied_capacity": self.remaining_substances, "is_busy": False}
 
+    def get_state(self):
+        return {"occupied_capacity": self.remaining_substances, "is_busy": self.is_resting}
+
     def start_resting(self):
         glycerin_amount = self.remaining_substances * 0.01
         ethanol_amount = self.remaining_substances * 0.03

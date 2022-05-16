@@ -1,6 +1,4 @@
-from collections import defaultdict
 import json
-import os
 from socket import socket, AF_INET, SOCK_STREAM
 from typing import Any
 from Enums.Ports import ServersPorts
@@ -10,7 +8,6 @@ from SodiumHydroxideTank import SodiumHydroxideServer
 from OilTankServer import OilTankServer
 from Utils.GeneralUtilities import clear_window
 from Utils.TimeUtilities import set_interval
-import pandas as pd
 
 
 class OrchestratrorClient:
@@ -36,8 +33,25 @@ class OrchestratrorClient:
                 set_interval(lambda: SodiumHydroxideServer.receive_sodium(
                     sock), time_deposit_sodium)
 
+            else:
+                set_interval(lambda: sock.sendall("get_state".encode()), 2)
+
             while True:
-                sock.recv(1024).decode()
+                response = sock.recv(1024).decode()
+                OrchestratrorClient.components_state[component_name] = json.loads(
+                    response)
+
+    def show_components_state(self):
+        clear_window()
+
+        columns_to_show = ["occupied_capacity", "is_busy"]
+
+        for component_name, state in self.components_state.items():
+            print(component_name, end=' | ')
+            for column in columns_to_show:
+                if column in state.keys():
+                    print(f"{column}: {state[column]}", end=" | ")
+            print()
 
     def start(self) -> None:
         components_servers_threads: list[Thread] = []
@@ -50,6 +64,8 @@ class OrchestratrorClient:
 
             components_servers_threads.append(component_thread)
             component_thread.start()
+
+        set_interval(self.show_components_state, secs = 1)
 
         [thread.join() for thread in components_servers_threads]
 

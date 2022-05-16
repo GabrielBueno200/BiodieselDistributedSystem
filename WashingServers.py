@@ -10,6 +10,9 @@ class WashingServer(BaseComponentServer):
 
         return {"occupied_capacity": 50}
 
+    def get_state(self):
+        return {"occupied_capacity": 50}
+
 
 Thread(target=WashingServer('localhost', ServersPorts.first_washing).run).start()
 Thread(target=WashingServer('localhost', ServersPorts.second_washing).run).start()

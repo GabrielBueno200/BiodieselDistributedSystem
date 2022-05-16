@@ -35,13 +35,16 @@ class ReactorServer(BaseComponentServer):
         self.remaining_substances = sum(self.substances_amount.values())
 
         if not self.check_can_transfer_substance(substance_type):
-            return {"occupied_capacity": self.remaining_substances, "is_busy": False, "max_substance_reached": True}
+            return {"is_busy": False, "max_substance_reached": True}
 
         self.substances_amount[substance_type] += substance_amount
         self.remaining_substances += substance_amount
         self.log_info(f"received {substance_amount}l of {substance_type}")
 
-        return {"occupied_capacity": self.remaining_substances, "is_busy": False, "max_substance_reached": False}
+        return {"is_busy": False, "max_substance_reached": False}
+
+    def get_state(self):
+        return {"occupied_capacity": self.remaining_substances, "is_busy": self.check_is_processing()}
 
     def check_is_processing(self):
         return self.max_sodium_amount() and self.max_ethanol_amount() and self.max_oil_amount()

@@ -26,6 +26,9 @@ class OilTankServer(BaseComponentServer):
         self.log_info(
             f"Received {oil_amount}l of oil")
 
+        return self.get_state()
+
+    def get_state(self):
         return {"occupied_capacity": self.remaining_oil}
 
     def transfer_oil_to_reactor(self):

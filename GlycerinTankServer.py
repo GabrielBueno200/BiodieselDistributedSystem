@@ -8,6 +8,9 @@ class GlycerinTankServer(BaseComponentServer):
     def process_substance(self, glycerin_payload: dict):
         self.receive_gliceryn(glycerin_payload["glycerin_amount"])
 
+        return self.get_state()
+
+    def get_state(self):
         return {"occupied_capacity": self.remaining_glycerin}
 
     def receive_gliceryn(self, glycerin_amount: float):

@@ -1,3 +1,4 @@
+from http import client
 import json
 from threading import Thread
 from abc import ABC, abstractmethod
@@ -16,31 +17,35 @@ class BaseComponentServer(ABC):
     @abstractmethod
     def process_substance(self, payload: dict) -> None: pass
 
+    @abstractmethod
+    def get_state(self): pass
+
     def log_info(self, info: str):
         print(f"{self.__class__.__name__}: {info}")
 
     @staticmethod
     def connect_client(client_connection: socket, component_server: "BaseComponentServer") -> None:
+        while True:
+            payload = client_connection.recv(1024)
 
-        with client_connection:
-            while True:
-                payload = client_connection.recv(1024)
-
-                if payload:
-                    # string payload
-                    serialized_payload = payload.decode()
-
+            if payload:
+                if payload.decode() == "get_state":
+                    component_state = component_server.get_state()
+                    client_connection.sendall(
+                        json.dumps(component_state).encode())
+                else:
                     # converted string payload to dict
-                    deserialized_payload: dict = json.loads(serialized_payload)
+                    deserialized_payload: dict = json.loads(payload)
 
                     response_data = component_server.process_substance(
                         deserialized_payload)
 
-                    component_server.log_info(response_data)
-
                     if response_data:
-                        client_connection.sendall(
-                            json.dumps(response_data).encode())
+                        try:
+                            client_connection.sendall(
+                                json.dumps(response_data).encode())
+                        except Exception as ex:
+                            component_server.log_info(ex)
 
     def start_client_thread(self, client_connection: socket) -> None:
         client_thread = Thread(

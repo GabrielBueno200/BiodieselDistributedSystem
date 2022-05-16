@@ -25,6 +25,9 @@ class SodiumHydroxideServer(BaseComponentServer):
 
         self.log_info(f"Received {sodium_amount}l of hydroxide sodium")
 
+        return self.get_state()
+
+    def get_state(self):
         return {"occupied_capacity": self.remaining_sodium}
 
     def transfer_sodium_to_reactor(self):
@@ -58,7 +61,7 @@ class SodiumHydroxideServer(BaseComponentServer):
 
     @staticmethod
     def receive_sodium(sodium_tank_client_socket: socket):
-        sodium_to_deposit = 0.25
+        sodium_to_deposit = 0.5
         sodium_tank_client_socket.sendall(json.dumps({
             "sodium_amount": sodium_to_deposit
         }).encode())

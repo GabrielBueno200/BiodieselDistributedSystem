@@ -10,6 +10,9 @@ class BiodiselTankServer(BaseComponentServer):
 
         return {"occupied_capacity": self.remaining_biodiesel}
 
+    def get_state(self):
+        return {"occupied_capacity": self.remaining_biodiesel}
+
     def receive_biodiesel(self, biodiesel_amount: float):
         self.total_biodiesel += biodiesel_amount
 
