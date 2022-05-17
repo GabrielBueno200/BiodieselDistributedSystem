@@ -16,7 +16,7 @@ class GlycerinTankServer(BaseComponentServer):
     def receive_gliceryn(self, glycerin_amount: float):
         self.remaining_glycerin += glycerin_amount
 
-        self.log_info(f"Received {glycerin_amount}l of glycerin")
+        # self.log_info(f"Received {glycerin_amount}l of glycerin")
 
 
 GlycerinTankServer('localhost', ServersPorts.glycerin_tank).run()

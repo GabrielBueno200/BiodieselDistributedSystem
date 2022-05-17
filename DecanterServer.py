@@ -1,5 +1,6 @@
 import json
 from socket import AF_INET, SOCK_STREAM, socket
+from time import sleep
 from BaseComponentServer import BaseComponentServer
 from Enums.Ports import ServersPorts
 from Enums.Substance import SubstanceType
@@ -12,19 +13,17 @@ class DecanterServer(BaseComponentServer):
     is_resting = False
 
     def process_substance(self, substances_payload: dict):
-        # if not self.is_resting:
-        #     self.remaining_substances += substances_amount
-        #     self.is_resting = True
-        #     # set_timeout(self.start_resting, secs=5)
+        if not self.is_resting:
+            substances_amount = substances_payload["substances_amount"]
+            self.remaining_substances += substances_amount
+            self.is_resting = True
+            sleep(5)
+            self.start_resting()
 
-        #     self.log_info(
-        #         f"Received {substances_amount}l of sodium, ethanol and oil from reactor")
+            # self.log_info(
+            #     f"Received {substances_amount}l of sodium, ethanol and oil from reactor")
 
-        #     return {"occupied_capacity": self.remaining_substances, "is_busy": False}
-        # else:
-        #     return {"occupied_capacity": self.remaining_substances, "is_busy": True}
-
-        return {"occupied_capacity": self.remaining_substances, "is_busy": False}
+        return self.get_state()
 
     def get_state(self):
         return {"occupied_capacity": self.remaining_substances, "is_busy": self.is_resting}

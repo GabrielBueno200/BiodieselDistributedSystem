@@ -5,13 +5,12 @@ from Enums.Ports import ServersPorts
 
 class WashingServer(BaseComponentServer):
     def process_substance(self, solution_payload: dict):
-        self.log_info(f"received solution: {solution_payload}")
-        print("washing substance...")
+        # self.log_info(f"received solution: {solution_payload}")
 
-        return {"occupied_capacity": 50}
+        return {"occupied_capacity": 0}
 
     def get_state(self):
-        return {"occupied_capacity": 50}
+        return {"occupied_capacity": 0}
 
 
 Thread(target=WashingServer('localhost', ServersPorts.first_washing).run).start()
