@@ -67,7 +67,7 @@ class OilTankServer(BaseComponentServer):
 
                     reactor_state = json.loads(reactor_response.decode())
 
-                    if not reactor_state["is_busy"] and not reactor_state["max_substance_reached"]:
+                    if not reactor_state["is_busy"]:
                         self.log_info(
                             f"transfering to reactor: {oil_to_transfer}l")
                         self.remaining_oil -= reactor_state["total_transfered"]

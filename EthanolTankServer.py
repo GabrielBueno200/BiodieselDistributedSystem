@@ -54,7 +54,7 @@ class EthanolTankServer(BaseComponentServer):
                 if reactor_response:
                     reactor_state = json.loads(reactor_response.decode())
 
-                    if not reactor_state["is_busy"] and not reactor_state["max_substance_reached"]:
+                    if not reactor_state["is_busy"]:
                         self.log_info(
                             f"transfering to reactor: {ethanol_to_transfer}l")
                         self.remaining_ethanol -= reactor_state["total_transfered"]

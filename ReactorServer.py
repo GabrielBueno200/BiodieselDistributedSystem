@@ -46,7 +46,7 @@ class ReactorServer(BaseComponentServer):
 
     def process_substance(self, substance_payload: dict):
         if self.is_processing or self.check_can_process():
-            return {"is_busy": True, "max_substance_reached": True}
+            return {"is_busy": True}
 
         substance_type = substance_payload["substance_type"]
         substance_amount = substance_payload["substance_amount"]
@@ -124,10 +124,10 @@ class ReactorServer(BaseComponentServer):
             transfer_amount = max_substance_amount - \
                 self.substances_amount[substance_type]
             self.substances_amount[substance_type] += transfer_amount
-            return {"total_transfered": transfer_amount, "is_busy": False, "max_substance_reached": False}
+            return {"total_transfered": transfer_amount, "is_busy": False}
 
         self.substances_amount[substance_type] += transfer_amount
-        return {"total_transfered": transfer_amount, "is_busy": False, "max_substance_reached": True}
+        return {"total_transfered": transfer_amount, "is_busy": False}
 
 
 if __name__ == "__main__":
