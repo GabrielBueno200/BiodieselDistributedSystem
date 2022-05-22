@@ -36,11 +36,11 @@ class OilTankServer(BaseComponentServer):
     def receive_oil(oil_tank_client_socket: socket):
         oil_to_deposit = uniform(1, 2)
 
-        content = json.dumps({
+        payload = json.dumps({
             "oil_amount": oil_to_deposit
         })
 
-        oil_tank_client_socket.sendall(content.encode())
+        oil_tank_client_socket.sendall(payload.encode())
 
     def transfer_oil_to_reactor(self):
         if self.remaining_oil > 0:
@@ -70,6 +70,7 @@ class OilTankServer(BaseComponentServer):
                     if not reactor_state["is_busy"]:
                         self.log_info(
                             f"transfering to reactor: {oil_to_transfer}l")
+                        self.log_info(reactor_state["total_transfered"])
                         self.remaining_oil -= reactor_state["total_transfered"]
 
 
