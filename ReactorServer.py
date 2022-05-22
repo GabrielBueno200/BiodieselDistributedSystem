@@ -84,7 +84,6 @@ class ReactorServer(BaseComponentServer):
                     {"substances_amount": substances_to_transfer}).encode())
 
                 decanter_sock.recv(1024)
-                self.log_info("entrou aqui")
 
             self.remaining_substances -= substances_to_transfer
             print(self.remaining_substances, substances_to_transfer)
