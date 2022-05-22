@@ -18,7 +18,7 @@ class GlycerinTankServer(BaseComponentServer):
         glycerin_amount = glycerin_payload["glycerin_amount"]
         self.remaining_glycerin += glycerin_amount
 
-        self.log_info(f"Received {self.glycerin_amount}l of glycerin")
+        self.log_info(f"Received {glycerin_amount}l of glycerin")
 
         return self.get_state()
 

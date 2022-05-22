@@ -26,6 +26,9 @@ class FirstWashingServer(BaseComponentServer):
     def process_substance(self, solution_payload: dict) -> None:
         solution_amount = solution_payload["solution_amount"]
         self.remaining_solution += solution_amount
+        self.log_info("washing substances...")
+
+        return self.get_state()
 
     def transfer_to_second_washing(self):
         if self.remaining_solution > 0:

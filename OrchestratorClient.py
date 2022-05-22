@@ -12,10 +12,10 @@ from EthanolTankServer import EthanolTankServer
 
 
 class OrchestratorClient:
-    data_payload = 1024
     time_deposit_oil = 10
     time_deposit_ethanol = 1
     time_deposit_sodium = 1
+
     components_state = {
         "oil_tank": {},
         "sodium_hydro_tank": {},
@@ -59,7 +59,7 @@ class OrchestratorClient:
                 call_repeatedly(1, sock.sendall, "get_state".encode())
 
             while True:
-                response = sock.recv(OrchestratorClient.data_payload)
+                response = sock.recv(1024)
 
                 OrchestratorClient.components_state[component_name] = json.loads(
                     response)
