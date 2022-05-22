@@ -95,14 +95,14 @@ class ReactorServer(BaseComponentServer):
 
         self.is_processing = False
 
-    def max_oil_reached(self, transfer_amount: float = 0):
-        return self.substances_amount[SubstanceType.OIL] + transfer_amount == self.max_oil
+    def max_oil_reached(self):
+        return self.substances_amount[SubstanceType.OIL] == self.max_oil
 
-    def max_sodium_reached(self, transfer_amount: float = 0):
-        return self.substances_amount[SubstanceType.SODIUM] + transfer_amount == self.max_sodium
+    def max_sodium_reached(self):
+        return self.substances_amount[SubstanceType.SODIUM] == self.max_sodium
 
-    def max_ethanol_reached(self, transfer_amount: float = 0):
-        return self.substances_amount[SubstanceType.ETHANOL] + transfer_amount == self.max_ethanol
+    def max_ethanol_reached(self):
+        return self.substances_amount[SubstanceType.ETHANOL] == self.max_ethanol
 
     def transfer_substance(self, substance_type: SubstanceType, transfer_amount: float) -> bool:
         max_substance_amount = 0
