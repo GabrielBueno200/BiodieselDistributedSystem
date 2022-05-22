@@ -8,6 +8,7 @@ import threading
 import sys
 from Utils.TimeUtilities import call_repeatedly
 
+
 class DecanterServer(BaseComponentServer):
     def __init__(self, host: str, port: int):
         super().__init__(host, port)
@@ -15,7 +16,8 @@ class DecanterServer(BaseComponentServer):
         self.remaining_substances = 0
         self.is_resting = False
         self.max_reached = False
-        self.cancel_future_calls = call_repeatedly(interval=1, func=self.deplete_tank)
+        self.cancel_future_calls = call_repeatedly(
+            interval=1, func=self.deplete_tank)
 
     def signal_handler(self, sig, frame):
         self.cancel_future_calls()
@@ -28,7 +30,7 @@ class DecanterServer(BaseComponentServer):
         if not self.is_resting and not self.max_reached:
             substances_amount = substances_payload["substances_amount"]
             self.remaining_substances += substances_amount
-            
+
             self.is_resting = True
 
             time_to_rest = 5
@@ -39,7 +41,7 @@ class DecanterServer(BaseComponentServer):
 
         if self.remaining_substances == self.max_capacity:
             self.max_reached = True
-            
+
         return self.get_state()
 
     def stop_resting(self):
@@ -70,6 +72,7 @@ class DecanterServer(BaseComponentServer):
             self.remaining_substances -= substance_amount
 
             component_sock.recv(self.data_payload)
+
 
 if __name__ == "__main__":
     DecanterServer('localhost', ServersPorts.decanter).run()

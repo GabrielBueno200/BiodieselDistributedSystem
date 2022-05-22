@@ -1,13 +1,11 @@
-from BaseComponentServer import BaseComponentServer
+import sys
+import json
+from time import sleep
 from Enums.Ports import ServersPorts
 from Enums.Substance import SubstanceType
+from BaseComponentServer import BaseComponentServer
 from socket import socket, AF_INET, SOCK_STREAM
-from random import uniform
-import json
-import threading
-import sys 
-from Models.CheckStatus import check_status
-from Utils.TimeUtilities import call_repeatedly
+
 
 class ReactorServer(BaseComponentServer):
     def __init__(self, host: str, port: int):
@@ -22,7 +20,7 @@ class ReactorServer(BaseComponentServer):
         }
 
         self.remaining_substances = 0
-        self.substances_outflow = 5
+        self.substances_outflow = 1
 
         self.is_processing = False
 
@@ -30,14 +28,15 @@ class ReactorServer(BaseComponentServer):
         sys.exit(0)
 
     def get_state(self):
-        state = {"occupied_capacity": self.remaining_substances, "is_busy": self.is_processing}
+        state = {"occupied_capacity": self.remaining_substances,
+                 "is_busy": self.is_processing}
         state.update(self.substances_amount)
         state.pop('glycerin', None)
         return state
 
     def process_substance(self, substance_payload: dict):
 
-        if self.check_can_process():
+        if self.is_processing or self.check_can_process():
             return {"is_busy": True, "max_substance_reached": True}
 
         substance_type = substance_payload["substance_type"]
@@ -55,22 +54,22 @@ class ReactorServer(BaseComponentServer):
 
         return {"is_busy": False, "max_substance_reached": False}
 
-    def check_can_process(self): 
-        can_process = self.max_sodium_amount() and self.max_ethanol_amount() and self.max_oil_amount()
-        decanter_stats = check_status(ServersPorts.decanter)
-        decanter_available = not decanter_stats["max_limit_reached"] and not decanter_stats["is_resting"]
+    def check_can_process(self):
+        can_process = self.max_sodium_amount(
+        ) and self.max_ethanol_amount() and self.max_oil_amount()
+
+        decanter_state = self.check_component_state(ServersPorts.decanter)
+        decanter_available = not decanter_state["max_limit_reached"] and not decanter_state["is_resting"]
 
         if decanter_available and can_process and not self.is_processing:
             self.is_processing = True
-            
-            time_transfer_decanter = 1
-            threading.Timer(time_transfer_decanter, self.transfer_substances_to_decanter).start()
+            self.transfer_substances_to_decanter()
             return True
-        
+
         return False
 
     def transfer_substances_to_decanter(self):
-        if self.remaining_substances > 0:
+        while self.remaining_substances > 0:
             substances_to_transfer = 0
 
             if self.remaining_substances >= self.substances_outflow:
@@ -84,30 +83,36 @@ class ReactorServer(BaseComponentServer):
                 decanter_sock.sendall(json.dumps(
                     {"substances_amount": substances_to_transfer}).encode())
 
-                decanter_response = decanter_sock.recv(1024)
+                decanter_sock.recv(1024)
+                self.log_info("entrou aqui")
 
-                decanter_state = json.loads(decanter_response.decode())
+            self.remaining_substances -= substances_to_transfer
+            print(self.remaining_substances, substances_to_transfer)
+            sleep(1)
 
-                # self.log_info(
-                #     f"transfering to decanter: {substances_to_transfer}l")
-                self.remaining_substances -= substances_to_transfer
+        self.substances_amount[SubstanceType.OIL] = 0
+        self.substances_amount[SubstanceType.GLYCERIN] = 0
+        self.substances_amount[SubstanceType.SODIUM] = 0
 
-                self.substances_amount[SubstanceType.OIL] = 0
-                self.substances_amount[SubstanceType.GLYCERIN] = 0
-                self.substances_amount[SubstanceType.SODIUM] = 0
+        self.is_processing = False
 
-            self.is_processing = False
+    def max_oil_amount(
+        self): return self.substances_amount[SubstanceType.OIL] >= self.max_capacity / 2
 
-    def max_oil_amount(self): return self.substances_amount[SubstanceType.OIL] >= self.max_capacity / 2
+    def max_sodium_amount(
+        self): return self.substances_amount[SubstanceType.SODIUM] >= self.max_capacity / 4
 
-    def max_sodium_amount(self): return self.substances_amount[SubstanceType.SODIUM] >= self.max_capacity / 4
-
-    def max_ethanol_amount(self): return self.substances_amount[SubstanceType.ETHANOL] >= self.max_capacity / 4
+    def max_ethanol_amount(
+        self): return self.substances_amount[SubstanceType.ETHANOL] >= self.max_capacity / 4
 
     def check_can_transfer_substance(self, substance_type) -> bool:
-        if substance_type == SubstanceType.OIL: return not self.max_oil_amount()
-        elif substance_type == SubstanceType.ETHANOL: return not self.max_ethanol_amount()
-        elif substance_type == SubstanceType.SODIUM: return not self.max_sodium_amount()
+        if substance_type == SubstanceType.OIL:
+            return not self.max_oil_amount()
+        elif substance_type == SubstanceType.ETHANOL:
+            return not self.max_ethanol_amount()
+        elif substance_type == SubstanceType.SODIUM:
+            return not self.max_sodium_amount()
+
 
 if __name__ == "__main__":
     ReactorServer('localhost', ServersPorts.reactor).run()

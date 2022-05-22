@@ -6,12 +6,14 @@ from Enums.Substance import SubstanceType
 from Utils.TimeUtilities import call_repeatedly
 import sys
 
+
 class SodiumHydroxideServer(BaseComponentServer):
     def __init__(self, host: str, port: int):
         super().__init__(host, port)
         self.remaining_sodium = 0
         self.sodium_outflow = 1
-        self.cancel_future_calls = call_repeatedly(interval=1, func=self.transfer_sodium_to_reactor)
+        self.cancel_future_calls = call_repeatedly(
+            interval=1, func=self.transfer_sodium_to_reactor)
 
     def signal_handler(self, sig, frame):
         self.cancel_future_calls()
@@ -24,7 +26,7 @@ class SodiumHydroxideServer(BaseComponentServer):
         sodium_amount = sodium_payload["sodium_amount"]
         self.remaining_sodium += sodium_amount
 
-        #self.log_info(f"Received {sodium_amount}l of hydroxide sodium")
+        self.log_info(f"Received {sodium_amount}l of hydroxide sodium")
 
         return self.get_state()
 
@@ -66,6 +68,7 @@ class SodiumHydroxideServer(BaseComponentServer):
         })
 
         sodium_tank_client_socket.sendall(content.encode())
+
 
 if __name__ == "__main__":
     SodiumHydroxideServer('localhost', ServersPorts.sodium_hydro_tank).run()
