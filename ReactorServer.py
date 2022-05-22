@@ -30,12 +30,15 @@ class ReactorServer(BaseComponentServer):
         sys.exit(0)
 
     def get_state(self):
-        return {
+        state = {
             "occupied_capacity": self.remaining_substances,
             "is_busy": self.is_processing,
             "cycles": self.cycles,
             **self.substances_amount
         }
+
+        state.pop('glycerin', None)
+        return state
 
     def process_substance(self, substance_payload: dict):
         if self.is_processing or self.check_can_process():
