@@ -10,12 +10,12 @@ class ServersPorts(Enum, metaclass=EnumDirectValueMeta):
     oil_tank = 8082
     sodium_hydro_tank = 8083
     ethanol_tank = 8084
-    biodiesel_tank = 8085
-    glycerin_tank = 8086
+    glycerin_tank = 8085
+    biodiesel_tank = 8086
 
     # dryers
-    # washings_dryer = 8087
-    # ethanol_tank_dryer = 8088
+    biodiesel_tank_dryer = 8087
+    ethanol_tank_dryer = 8088
 
     # washings
     first_washing = 8089

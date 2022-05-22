@@ -1,66 +1,70 @@
-from http import client
-import json
-from threading import Thread
 from abc import ABC, abstractmethod
 from socket import socket, AF_INET, SOCK_STREAM
+import json
+import time
+from _thread import *
+import signal
+import sys
 
 
 class BaseComponentServer(ABC):
-    host: str
-    port: int
-    clients: list[socket]
-
-    def __init__(self, host: str, port: int) -> None:
+    
+    def __init__(self, host, port) -> None:
         self.host = host
         self.port = port
+        self.data_payload = 1024
+        signal.signal(signal.SIGINT, self.signal_handler)
+    
 
     @abstractmethod
-    def process_substance(self, payload: dict) -> None: pass
+    def signal_handler(self, sig, frame):
+        pass
+
 
     @abstractmethod
     def get_state(self): pass
 
+    @abstractmethod
+    def process_substance(self, payload: dict) -> None: pass
+
     def log_info(self, info: str):
         print(f"{self.__class__.__name__}: {info}")
 
-    @staticmethod
-    def connect_client(client_connection: socket, component_server: "BaseComponentServer") -> None:
+    def handle_data(self, client_connection: socket):
         while True:
-            payload = client_connection.recv(1024)
 
-            if payload:
-                if payload.decode() == "get_state":
-                    component_state = component_server.get_state()
-                    client_connection.sendall(
-                        json.dumps(component_state).encode())
+            data = client_connection.recv(self.data_payload)
+            
+            if data:
+                if data.decode() == "get_state":
+                    component_state = self.get_state()
+                    client_connection.sendall(json.dumps(component_state).encode())
                 else:
-                    # converted string payload to dict
-                    deserialized_payload: dict = json.loads(payload)
+                    #self.log_info("Data received")
+                    deserialized_payload: dict = json.loads(data)
+                    
+                    response_data = self.process_substance(deserialized_payload)
+                    
+                    client_connection.sendall(json.dumps(response_data).encode())
+                    #client_connection.send(f"{self.__class__.__name__} oi".encode())
+            else:
+                break
 
-                    response_data = component_server.process_substance(
-                        deserialized_payload)
-
-                    if response_data:
-                        try:
-                            client_connection.sendall(
-                                json.dumps(response_data).encode())
-                        except Exception as ex:
-                            component_server.log_info(ex)
-
-    def start_client_thread(self, client_connection: socket) -> None:
-        client_thread = Thread(
-            target=BaseComponentServer.connect_client,
-            args=(client_connection, self)
-        )
-        client_thread.start()
 
     def run(self) -> None:
         with socket(AF_INET, SOCK_STREAM) as sock:
             sock.bind((self.host, self.port))
             sock.listen(5)
-            self.log_info("Listening at {}:{}".format(self.host, self.port))
+
+            self.log_info(f"Listening at {self.host}:{self.port}")
 
             while True:
                 client_connection = sock.accept()[0]
+                
+                #self.log_info('New connection')
 
-                self.start_client_thread(client_connection)
+                start_new_thread(self.handle_data, (client_connection, ))
+
+                #self.handle_data(client_connection)
+
+                #client_connection.close()

@@ -1,48 +1,64 @@
-import json
-from socket import AF_INET, SOCK_STREAM, socket
 from time import sleep
+from socket import AF_INET, SOCK_STREAM, socket
 from BaseComponentServer import BaseComponentServer
-from Enums.Ports import ServersPorts
 from Enums.Substance import SubstanceType
-from Utils.TimeUtilities import set_timeout
-
+from Enums.Ports import ServersPorts
+import json
+import threading
+import sys
+from Utils.TimeUtilities import call_repeatedly
 
 class DecanterServer(BaseComponentServer):
-    max_capacity: int = 10
-    remaining_substances = 0
-    is_resting = False
+    def __init__(self, host: str, port: int):
+        super().__init__(host, port)
+        self.max_capacity = 10
+        self.remaining_substances = 0
+        self.is_resting = False
+        self.max_reached = False
+        self.cancel_future_calls = call_repeatedly(interval=1, func=self.deplete_tank)
+
+    def signal_handler(self, sig, frame):
+        self.cancel_future_calls()
+        sys.exit(0)
+
+    def get_state(self):
+        return {"occupied_capacity": self.remaining_substances, "is_resting": self.is_resting, "max_limit_reached": self.max_reached}
 
     def process_substance(self, substances_payload: dict):
-        if not self.is_resting:
+        if not self.is_resting and not self.max_reached:
             substances_amount = substances_payload["substances_amount"]
             self.remaining_substances += substances_amount
+            
             self.is_resting = True
-            sleep(5)
-            self.start_resting()
+
+            time_to_rest = 5
+            threading.Timer(time_to_rest, self.stop_resting).start()
 
             # self.log_info(
             #     f"Received {substances_amount}l of sodium, ethanol and oil from reactor")
 
+        if self.remaining_substances == self.max_capacity:
+            self.max_reached = True
+            
         return self.get_state()
 
-    def get_state(self):
-        return {"occupied_capacity": self.remaining_substances, "is_busy": self.is_resting}
-
-    def start_resting(self):
-        glycerin_amount = self.remaining_substances * 0.01
-        ethanol_amount = self.remaining_substances * 0.03
-        solution_amount = self.remaining_substances * 0.96
-
-        self.transfer_substance(SubstanceType.GLYCERIN,
-                                glycerin_amount, ServersPorts.glycerin_tank)
-
-        self.transfer_substance(SubstanceType.ETHANOL,
-                                ethanol_amount, ServersPorts.ethanol_tank)
-
-        self.transfer_substance(SubstanceType.SOLUTION,
-                                solution_amount, ServersPorts.first_washing)
-
+    def stop_resting(self):
         self.is_resting = False
+
+    def deplete_tank(self):
+        if not self.is_resting and self.remaining_substances > 0:
+            glycerin_amount = self.remaining_substances * 0.01
+            ethanol_amount = self.remaining_substances * 0.03
+            solution_amount = self.remaining_substances * 0.96
+
+            self.transfer_substance(SubstanceType.GLYCERIN,
+                                    glycerin_amount, ServersPorts.glycerin_tank)
+
+            self.transfer_substance(SubstanceType.ETHANOL,
+                                    ethanol_amount, ServersPorts.ethanol_tank_dryer)
+
+            self.transfer_substance(SubstanceType.SOLUTION,
+                                    solution_amount, ServersPorts.first_washing)
 
     def transfer_substance(self, substance: SubstanceType, substance_amount: float, server_port: ServersPorts):
         with socket(AF_INET, SOCK_STREAM) as component_sock:
@@ -53,7 +69,7 @@ class DecanterServer(BaseComponentServer):
 
             self.remaining_substances -= substance_amount
 
-            component_sock.recv(1024)
+            component_sock.recv(self.data_payload)
 
-
-DecanterServer('localhost', ServersPorts.decanter).run()
+if __name__ == "__main__":
+    DecanterServer('localhost', ServersPorts.decanter).run()
