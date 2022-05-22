@@ -32,7 +32,7 @@ class BaseComponentServer(ABC):
             component_sock.connect(("localhost", port))
             component_sock.sendall("get_state".encode())
 
-            component_response = component_sock.recv(1024)
+            component_response = component_sock.recv(self.data_payload)
 
             component_state = json.loads(component_response.decode())
 
@@ -40,7 +40,6 @@ class BaseComponentServer(ABC):
 
     def handle_data(self, client_connection: socket):
         while True:
-
             data = client_connection.recv(self.data_payload)
 
             if data:
@@ -69,10 +68,4 @@ class BaseComponentServer(ABC):
             while True:
                 client_connection = sock.accept()[0]
 
-                #self.log_info('New connection')
-
                 start_new_thread(self.handle_data, (client_connection, ))
-
-                # self.handle_data(client_connection)
-
-                # client_connection.close()
