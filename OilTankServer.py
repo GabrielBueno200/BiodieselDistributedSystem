@@ -1,11 +1,11 @@
-from BaseComponentServer import BaseComponentServer
-from Enums.Ports import ServersPorts
-from socket import socket, AF_INET, SOCK_STREAM
-from random import uniform
+import sys
 import json
+from random import uniform
+from Enums.Ports import ServersPorts
 from Enums.Substance import SubstanceType
 from Utils.TimeUtilities import call_repeatedly
-import sys
+from socket import socket, AF_INET, SOCK_STREAM
+from BaseComponentServer import BaseComponentServer
 
 
 class OilTankServer(BaseComponentServer):
@@ -64,13 +64,11 @@ class OilTankServer(BaseComponentServer):
                 reactor_response = reactor_sock.recv(self.data_payload)
 
                 if reactor_response:
-
                     reactor_state = json.loads(reactor_response.decode())
 
                     if not reactor_state["is_busy"]:
                         self.log_info(
                             f"transfering to reactor: {oil_to_transfer}l")
-                        self.log_info(reactor_state["total_transfered"])
                         self.remaining_oil -= reactor_state["total_transfered"]
 
 
