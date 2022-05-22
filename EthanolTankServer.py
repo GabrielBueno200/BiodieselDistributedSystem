@@ -57,7 +57,7 @@ class EthanolTankServer(BaseComponentServer):
                     if not reactor_state["is_busy"] and not reactor_state["max_substance_reached"]:
                         self.log_info(
                             f"transfering to reactor: {ethanol_to_transfer}l")
-                        self.remaining_ethanol -= ethanol_to_transfer
+                        self.remaining_ethanol -= reactor_state["total_transfered"]
 
     @staticmethod
     def receive_ethanol(ethanol_tank_client_socket: socket):

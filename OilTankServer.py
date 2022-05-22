@@ -7,12 +7,14 @@ from Enums.Substance import SubstanceType
 from Utils.TimeUtilities import call_repeatedly
 import sys
 
+
 class OilTankServer(BaseComponentServer):
     def __init__(self, host: str, port: int):
         super().__init__(host, port)
         self.remaining_oil = 0
         self.oil_outflow = 0.75
-        self.cancel_future_calls = call_repeatedly(interval=1, func=self.transfer_oil_to_reactor)
+        self.cancel_future_calls = call_repeatedly(
+            interval=1, func=self.transfer_oil_to_reactor)
 
     def signal_handler(self, sig, frame):
         self.cancel_future_calls()
@@ -37,18 +39,18 @@ class OilTankServer(BaseComponentServer):
         content = json.dumps({
             "oil_amount": oil_to_deposit
         })
-        
+
         oil_tank_client_socket.sendall(content.encode())
 
     def transfer_oil_to_reactor(self):
         if self.remaining_oil > 0:
             oil_to_transfer = 0
 
-            if self.remaining_oil >= self.oil_outflow: # More than 0.75
+            if self.remaining_oil >= self.oil_outflow:  # More than 0.75
                 oil_to_transfer = self.oil_outflow
             else:
                 oil_to_transfer = self.remaining_oil
-        
+
             with socket(AF_INET, SOCK_STREAM) as reactor_sock:
                 reactor_sock.connect(("localhost", ServersPorts.reactor))
 
@@ -56,18 +58,19 @@ class OilTankServer(BaseComponentServer):
                     "substance_type": SubstanceType.OIL,
                     "substance_amount": oil_to_transfer
                 }
-                
+
                 reactor_sock.sendall(json.dumps(payload_to_reactor).encode())
-                
+
                 reactor_response = reactor_sock.recv(self.data_payload)
-                
+
                 if reactor_response:
-                    
+
                     reactor_state = json.loads(reactor_response.decode())
 
                     if not reactor_state["is_busy"] and not reactor_state["max_substance_reached"]:
-                        self.log_info(f"transfering to reactor: {oil_to_transfer}l")
-                        self.remaining_oil -= oil_to_transfer
+                        self.log_info(
+                            f"transfering to reactor: {oil_to_transfer}l")
+                        self.remaining_oil -= reactor_state["total_transfered"]
 
 
 if __name__ == "__main__":

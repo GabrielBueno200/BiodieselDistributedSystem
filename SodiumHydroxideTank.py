@@ -57,7 +57,7 @@ class SodiumHydroxideServer(BaseComponentServer):
                     if not reactor_state["is_busy"] and not reactor_state["max_substance_reached"]:
                         self.log_info(
                             f"transfering to reactor: {sodium_to_transfer}l")
-                        self.remaining_sodium -= sodium_to_transfer
+                        self.remaining_sodium -= reactor_state["total_transfered"]
 
     @staticmethod
     def receive_sodium(sodium_tank_client_socket: socket):

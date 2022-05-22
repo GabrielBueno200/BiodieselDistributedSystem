@@ -13,6 +13,10 @@ class ReactorServer(BaseComponentServer):
 
         self.max_capacity = 5
 
+        self.max_sodium = self.max_capacity / 4
+        self.max_ethanol = self.max_capacity / 4
+        self.max_oil = self.max_capacity / 2
+
         self.substances_amount = {
             SubstanceType.OIL: 0,
             SubstanceType.SODIUM: 0,
@@ -49,19 +53,13 @@ class ReactorServer(BaseComponentServer):
 
         self.remaining_substances = sum(self.substances_amount.values())
 
-        if not self.check_can_transfer_substance(substance_type):
-            return {"is_busy": False, "max_substance_reached": True}
-
-        self.substances_amount[substance_type] += substance_amount
-        self.remaining_substances += substance_amount
-
         self.log_info(f"received {substance_amount}l of {substance_type}")
 
-        return {"is_busy": False, "max_substance_reached": False}
+        return self.transfer_substance(substance_type, substance_amount)
 
     def check_can_process(self):
-        max_substances_reached = self.max_sodium_amount(
-        ) and self.max_ethanol_amount() and self.max_oil_amount()
+        max_substances_reached = self.max_sodium_reached(
+        ) and self.max_ethanol_reached() and self.max_oil_reached()
 
         decanter_state = self.check_component_state(ServersPorts.decanter)
         decanter_available = not decanter_state["max_limit_reached"] and not decanter_state["is_resting"]
@@ -100,22 +98,36 @@ class ReactorServer(BaseComponentServer):
 
         self.is_processing = False
 
-    def max_oil_amount(
-        self): return self.substances_amount[SubstanceType.OIL] >= self.max_capacity / 2
+    def max_oil_reached(self, transfer_amount: float = 0):
+        return self.substances_amount[SubstanceType.OIL] + transfer_amount == self.max_oil
 
-    def max_sodium_amount(
-        self): return self.substances_amount[SubstanceType.SODIUM] >= self.max_capacity / 4
+    def max_sodium_reached(self, transfer_amount: float = 0):
+        return self.substances_amount[SubstanceType.SODIUM] + transfer_amount == self.max_sodium
 
-    def max_ethanol_amount(
-        self): return self.substances_amount[SubstanceType.ETHANOL] >= self.max_capacity / 4
+    def max_ethanol_reached(self, transfer_amount: float = 0):
+        return self.substances_amount[SubstanceType.ETHANOL] + transfer_amount == self.max_ethanol
 
-    def check_can_transfer_substance(self, substance_type) -> bool:
+    def transfer_substance(self, substance_type: SubstanceType, transfer_amount: float) -> bool:
+        max_substance_amount = 0
+
         if substance_type == SubstanceType.OIL:
-            return not self.max_oil_amount()
+            max_substance_amount = self.max_oil
         elif substance_type == SubstanceType.ETHANOL:
-            return not self.max_ethanol_amount()
+            max_substance_amount = self.max_ethanol
         elif substance_type == SubstanceType.SODIUM:
-            return not self.max_sodium_amount()
+            max_substance_amount = self.max_sodium
+
+        total_after_transference = self.substances_amount[substance_type] + \
+            transfer_amount
+
+        if total_after_transference > max_substance_amount:
+            transfer_amount = max_substance_amount - \
+                self.substances_amount[substance_type]
+            self.substances_amount[substance_type] += transfer_amount
+            return {"total_transfered": transfer_amount, "is_busy": False, "max_substance_reached": False}
+
+        self.substances_amount[substance_type] += transfer_amount
+        return {"total_transfered": transfer_amount, "is_busy": False, "max_substance_reached": True}
 
 
 if __name__ == "__main__":
