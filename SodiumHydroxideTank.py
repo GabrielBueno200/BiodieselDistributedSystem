@@ -1,10 +1,10 @@
-from BaseComponentServer import BaseComponentServer
-from Enums.Ports import ServersPorts
-from socket import socket, AF_INET, SOCK_STREAM
+import sys
 import json
+from Enums.Ports import ServersPorts
 from Enums.Substance import SubstanceType
 from Utils.TimeUtilities import call_repeatedly
-import sys
+from socket import socket, AF_INET, SOCK_STREAM
+from BaseComponentServer import BaseComponentServer
 
 
 class SodiumHydroxideServer(BaseComponentServer):
@@ -55,19 +55,19 @@ class SodiumHydroxideServer(BaseComponentServer):
                     reactor_state = json.loads(reactor_response.decode())
 
                     if not reactor_state["is_busy"] and not reactor_state["max_substance_reached"]:
-                        # self.log_info(
-                        #     f"transfering to reactor: {sodium_to_transfer}l")
+                        self.log_info(
+                            f"transfering to reactor: {sodium_to_transfer}l")
                         self.remaining_sodium -= sodium_to_transfer
 
     @staticmethod
     def receive_sodium(sodium_tank_client_socket: socket):
         sodium_to_deposit = 0.5
 
-        content = json.dumps({
+        payload = json.dumps({
             "sodium_amount": sodium_to_deposit
         })
 
-        sodium_tank_client_socket.sendall(content.encode())
+        sodium_tank_client_socket.sendall(payload.encode())
 
 
 if __name__ == "__main__":

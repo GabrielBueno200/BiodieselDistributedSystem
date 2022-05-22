@@ -22,20 +22,22 @@ class ReactorServer(BaseComponentServer):
         self.remaining_substances = 0
         self.substances_outflow = 1
 
+        self.cycles = 0
+
         self.is_processing = False
 
     def signal_handler(self, sig, frame):
         sys.exit(0)
 
     def get_state(self):
-        state = {"occupied_capacity": self.remaining_substances,
-                 "is_busy": self.is_processing}
-        state.update(self.substances_amount)
-        state.pop('glycerin', None)
-        return state
+        return {
+            "occupied_capacity": self.remaining_substances,
+            "is_busy": self.is_processing,
+            "cycles": self.cycles,
+            **self.substances_amount
+        }
 
     def process_substance(self, substance_payload: dict):
-
         if self.is_processing or self.check_can_process():
             return {"is_busy": True, "max_substance_reached": True}
 
@@ -55,14 +57,15 @@ class ReactorServer(BaseComponentServer):
         return {"is_busy": False, "max_substance_reached": False}
 
     def check_can_process(self):
-        can_process = self.max_sodium_amount(
+        max_substances_reached = self.max_sodium_amount(
         ) and self.max_ethanol_amount() and self.max_oil_amount()
 
         decanter_state = self.check_component_state(ServersPorts.decanter)
         decanter_available = not decanter_state["max_limit_reached"] and not decanter_state["is_resting"]
 
-        if decanter_available and can_process and not self.is_processing:
+        if decanter_available and max_substances_reached and not self.is_processing:
             self.is_processing = True
+            self.cycles += 1
             self.transfer_substances_to_decanter()
             return True
 
@@ -84,6 +87,7 @@ class ReactorServer(BaseComponentServer):
                     {"substances_amount": substances_to_transfer}).encode())
 
                 decanter_sock.recv(1024)
+                self.log_info("entrou aqui")
 
             self.remaining_substances -= substances_to_transfer
             print(self.remaining_substances, substances_to_transfer)

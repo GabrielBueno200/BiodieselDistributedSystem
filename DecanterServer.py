@@ -1,12 +1,11 @@
-from time import sleep
-from socket import AF_INET, SOCK_STREAM, socket
-from BaseComponentServer import BaseComponentServer
-from Enums.Substance import SubstanceType
-from Enums.Ports import ServersPorts
+import sys
 import json
 import threading
-import sys
+from Enums.Ports import ServersPorts
+from Enums.Substance import SubstanceType
 from Utils.TimeUtilities import call_repeatedly
+from socket import AF_INET, SOCK_STREAM, socket
+from BaseComponentServer import BaseComponentServer
 
 
 class DecanterServer(BaseComponentServer):
@@ -14,8 +13,9 @@ class DecanterServer(BaseComponentServer):
         super().__init__(host, port)
         self.max_capacity = 10
         self.remaining_substances = 0
+        self.cycles = 0
         self.is_resting = False
-        self.max_reached = False
+        self.max_limit_reached = False
         self.cancel_future_calls = call_repeatedly(
             interval=1, func=self.deplete_tank)
 
@@ -24,23 +24,29 @@ class DecanterServer(BaseComponentServer):
         sys.exit(0)
 
     def get_state(self):
-        return {"occupied_capacity": self.remaining_substances, "is_resting": self.is_resting, "max_limit_reached": self.max_reached}
+        return {
+            "occupied_capacity": self.remaining_substances,
+            "is_resting": self.is_resting,
+            "cycles": self.cycles,
+            "max_limit_reached": self.max_limit_reached,
+        }
 
     def process_substance(self, substances_payload: dict):
-        if not self.is_resting and not self.max_reached:
+        if not self.is_resting and not self.max_limit_reached:
             substances_amount = substances_payload["substances_amount"]
             self.remaining_substances += substances_amount
 
             self.is_resting = True
+            self.cycles += 1
 
             time_to_rest = 5
             threading.Timer(time_to_rest, self.stop_resting).start()
 
-            # self.log_info(
-            #     f"Received {substances_amount}l of sodium, ethanol and oil from reactor")
+            self.log_info(
+                f"Received {substances_amount}l of sodium, ethanol and oil from reactor")
 
         if self.remaining_substances == self.max_capacity:
-            self.max_reached = True
+            self.max_limit_reached = True
 
         return self.get_state()
 

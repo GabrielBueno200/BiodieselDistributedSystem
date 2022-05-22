@@ -6,12 +6,14 @@ from Enums.Substance import SubstanceType
 from Utils.TimeUtilities import call_repeatedly
 import sys
 
+
 class EthanolTankServer(BaseComponentServer):
     def __init__(self, host: str, port: int):
         super().__init__(host, port)
         self.remaining_ethanol = 0
         self.ethanol_outflow = 1
-        self.cancel_future_calls = call_repeatedly(interval=1, func=self.transfer_ethanol_to_reactor)
+        self.cancel_future_calls = call_repeatedly(
+            interval=1, func=self.transfer_ethanol_to_reactor)
 
     def signal_handler(self, sig, frame):
         self.cancel_future_calls()
@@ -19,12 +21,12 @@ class EthanolTankServer(BaseComponentServer):
 
     def get_state(self):
         return {"occupied_capacity": self.remaining_ethanol}
-    
+
     def process_substance(self, ethanol_payload: dict) -> dict or None:
         ethanol_amount = ethanol_payload["ethanol_amount"]
         self.remaining_ethanol += ethanol_amount
 
-        #self.log_info(f"Received {ethanol_amount}l of ethanol")
+        self.log_info(f"Received {ethanol_amount}l of ethanol")
 
         return self.get_state()
 
@@ -53,19 +55,20 @@ class EthanolTankServer(BaseComponentServer):
                     reactor_state = json.loads(reactor_response.decode())
 
                     if not reactor_state["is_busy"] and not reactor_state["max_substance_reached"]:
-                        # self.log_info(
-                        #     f"transfering to reactor: {ethanol_to_transfer}l")
+                        self.log_info(
+                            f"transfering to reactor: {ethanol_to_transfer}l")
                         self.remaining_ethanol -= ethanol_to_transfer
 
     @staticmethod
     def receive_ethanol(ethanol_tank_client_socket: socket):
         ethanol_to_deposit = 0.25
 
-        content = json.dumps({
+        payload = json.dumps({
             "ethanol_amount": ethanol_to_deposit
         })
-        
-        ethanol_tank_client_socket.sendall(content.encode())
+
+        ethanol_tank_client_socket.sendall(payload.encode())
+
 
 if __name__ == "__main__":
     EthanolTankServer('localhost', ServersPorts.ethanol_tank).run()

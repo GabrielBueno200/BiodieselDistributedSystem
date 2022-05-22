@@ -1,10 +1,11 @@
-from socket import AF_INET, SOCK_STREAM, socket
 import sys
-from BaseComponentServer import BaseComponentServer
+import json
 from Enums.Ports import ServersPorts
 from Enums.Substance import SubstanceType
 from Utils.TimeUtilities import call_repeatedly
-import json
+from socket import AF_INET, SOCK_STREAM, socket
+from BaseComponentServer import BaseComponentServer
+
 
 class SecondWashingServer(BaseComponentServer):
     def __init__(self, host, port) -> None:
@@ -12,7 +13,8 @@ class SecondWashingServer(BaseComponentServer):
         self.substances_outflow = 1.5
         self.loss = 0.025
         self.remaining_solution = 0
-        self.cancel_future_calls = call_repeatedly(interval=1.5, func=self.transfer_to_third_washing)
+        self.cancel_future_calls = call_repeatedly(
+            interval=1.5, func=self.transfer_to_third_washing)
 
     def signal_handler(self, sig, frame):
         self.cancel_future_calls()
@@ -38,7 +40,8 @@ class SecondWashingServer(BaseComponentServer):
             solutiion_to_send = substances_to_transfer*(1-self.loss)
 
             with socket(AF_INET, SOCK_STREAM) as component_sock:
-                component_sock.connect(("localhost", ServersPorts.third_washing))
+                component_sock.connect(
+                    ("localhost", ServersPorts.third_washing))
 
                 component_sock.sendall(json.dumps(
                     {f"{SubstanceType.SOLUTION}_amount": solutiion_to_send}).encode())
@@ -46,6 +49,7 @@ class SecondWashingServer(BaseComponentServer):
                 self.remaining_solution -= substances_to_transfer
 
                 component_sock.recv(self.data_payload)
+
 
 if __name__ == "__main__":
     SecondWashingServer('localhost', ServersPorts.second_washing).run()
