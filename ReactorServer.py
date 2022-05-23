@@ -104,8 +104,9 @@ class ReactorServer(BaseComponentServer):
     def max_ethanol_reached(self):
         return self.substances_amount[SubstanceType.ETHANOL] == self.max_ethanol
 
-    def transfer_substance(self, substance_type: SubstanceType, transfer_amount: float) -> bool:
+    def transfer_substance(self, substance_type: SubstanceType, transfer_amount: float) -> dict:
         max_substance_amount = 0
+        current_substance_amount = self.substances_amount[substance_type]
 
         if substance_type == SubstanceType.OIL:
             max_substance_amount = self.max_oil
@@ -114,14 +115,11 @@ class ReactorServer(BaseComponentServer):
         elif substance_type == SubstanceType.SODIUM:
             max_substance_amount = self.max_sodium
 
-        total_after_transference = self.substances_amount[substance_type] + \
+        total_after_transference = current_substance_amount + \
             transfer_amount
 
         if total_after_transference > max_substance_amount:
-            transfer_amount = max_substance_amount - \
-                self.substances_amount[substance_type]
-            self.substances_amount[substance_type] += transfer_amount
-            return {"total_transfered": transfer_amount, "is_busy": False}
+            transfer_amount = max_substance_amount - current_substance_amount
 
         self.substances_amount[substance_type] += transfer_amount
         return {"total_transfered": transfer_amount, "is_busy": False}

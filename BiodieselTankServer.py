@@ -15,7 +15,7 @@ class BiodiselTankServer(BaseComponentServer):
         return {"occupied_capacity": self.remaining_biodiesel}
 
     def process_substance(self, biodiesel_payload: dict) -> None:
-        biodiesel_amount = biodiesel_payload["solution_amount"]
+        biodiesel_amount = biodiesel_payload["biodiesel_amount"]
         self.remaining_biodiesel += biodiesel_amount
 
         self.log_info(f"Received {biodiesel_amount}l of biodiesel")

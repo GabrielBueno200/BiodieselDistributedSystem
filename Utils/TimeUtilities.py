@@ -1,10 +1,8 @@
-import threading
 from typing import Any, Callable
-import time
 from threading import Event, Thread
 
 
-def call_repeatedly(interval, func, *args):
+def call_repeatedly(interval: float, func: Callable[[Any], None], *args: list[Any]) -> None:
     stopped = Event()
 
     def loop():
