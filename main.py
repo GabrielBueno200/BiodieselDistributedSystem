@@ -28,9 +28,8 @@ def run_servers():
 
     if platform.system() == 'Windows':
         python_name = 'python'
-        for script in get_scripts():
-            t = Thread(target=subprocess.run, args=(script, ))
-            t.start()
+        [Thread(target=subprocess.run, args=(script, )).start()
+         for script in get_scripts()]
 
     elif platform.system() == 'Linux':
         python_name = f'python3'
