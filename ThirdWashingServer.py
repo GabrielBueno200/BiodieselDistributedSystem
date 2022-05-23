@@ -32,23 +32,24 @@ class ThirdWashingServer(BaseComponentServer):
 
     def transfer_to_biodiesel_dryer(self) -> None:
         if self.remaining_solution > 0:
-            solution_to_transfer = 0
+
+            substances_to_transfer = 0
 
             if self.remaining_solution >= self.substances_outflow:
-                solution_to_transfer = self.substances_outflow
+                substances_to_transfer = self.substances_outflow
             else:
-                solution_to_transfer = self.remaining_solution
+                substances_to_transfer = self.remaining_solution
 
-            biodisel_to_transfer = solution_to_transfer*(1-self.loss)
+            solutiion_to_send = substances_to_transfer*(1-self.loss)
 
             with socket(AF_INET, SOCK_STREAM) as component_sock:
                 component_sock.connect(
                     ("localhost", ServersPorts.biodiesel_tank_dryer))
 
                 component_sock.sendall(json.dumps(
-                    {f"biodiesel_amount": biodisel_to_transfer}).encode())
+                    {f"{SubstanceType.SOLUTION}_amount": solutiion_to_send}).encode())
 
-                self.remaining_solution -= solution_to_transfer
+                self.remaining_solution -= substances_to_transfer
 
                 component_sock.recv(self.data_payload)
 
