@@ -4,17 +4,19 @@ from Enums.Ports import ServersPorts
 from prettytable import PrettyTable, ALL
 from socket import socket, AF_INET, SOCK_STREAM
 from Utils.TimeUtilities import call_repeatedly
-
+from Utils.GeneralUtilities import clear_window
 
 from OilTankServer import OilTankServer
 from SodiumHydroxideTank import SodiumHydroxideServer
 from EthanolTankServer import EthanolTankServer
 
+import sys
 
 class OrchestratorClient:
     time_deposit_oil = 10
     time_deposit_ethanol = 1
     time_deposit_sodium = 1
+    cont = 0
 
     components_state = {
         "oil_tank": {},
@@ -32,7 +34,8 @@ class OrchestratorClient:
     }
 
     def __init__(self) -> None:
-        call_repeatedly(
+        self.cont = 0
+        self.cancel_future_calls = call_repeatedly(
             interval=1, func=OrchestratorClient.show_components_state)
 
     @staticmethod
@@ -67,7 +70,7 @@ class OrchestratorClient:
     @staticmethod
     def show_components_state():
         if OrchestratorClient.components_state:
-            # clear_window()
+            clear_window()
             all = []
 
             for key, value in OrchestratorClient.components_state.items():
@@ -85,7 +88,23 @@ class OrchestratorClient:
             table.hrules = ALL
             print(table)
 
+            OrchestratorClient.cont+=1
+
+            with open('stats.txt', 'a') as convert_file:
+                convert_file.write(json.dumps(OrchestratorClient.components_state) + '\n')
+
+    
+    def count_iterations(self):
+        while OrchestratorClient.cont < 5:
+            pass
+        self.cancel_future_calls()
+        sys.exit()
+
+
     def start(self):
+        a = Thread(target=self.count_iterations, daemon=True)
+        a.start()
+
         components_servers_threads: list[Thread] = []
 
         for component_port in ServersPorts:

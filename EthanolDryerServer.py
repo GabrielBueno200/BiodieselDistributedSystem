@@ -11,6 +11,7 @@ class EthanolDryerServer(BaseComponentServer):
         super().__init__(host, port)
         self.substances_outflow = 1
         self.loss = 0.005
+        self.product_loss = 0
         self.remaining_ethanol = 0
         self.cancel_future_calls = call_repeatedly(interval=5, func=self.transfer_to_ethanol_tank)
 
@@ -19,7 +20,8 @@ class EthanolDryerServer(BaseComponentServer):
         sys.exit(0)
     
     def get_state(self):
-        return {"occupied_capacity": self.remaining_ethanol}
+        return {"occupied_capacity": self.remaining_ethanol,
+                "product_loss": self.product_loss}
 
     def process_substance(self, ethanol_payload: dict) -> None:
         ethanol_amount = ethanol_payload["ethanol_amount"]
@@ -36,6 +38,7 @@ class EthanolDryerServer(BaseComponentServer):
                 substances_to_transfer = self.remaining_ethanol
 
             ethanol_to_send = substances_to_transfer*(1-self.loss)
+            self.product_loss += substances_to_transfer*self.loss
 
             with socket(AF_INET, SOCK_STREAM) as component_sock:
                 component_sock.connect(("localhost", ServersPorts.ethanol_tank))
