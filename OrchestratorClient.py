@@ -95,7 +95,7 @@ class OrchestratorClient:
 
     
     def count_iterations(self):
-        while OrchestratorClient.cont < 5:
+        while OrchestratorClient.cont < 3600:
             pass
         self.cancel_future_calls()
         sys.exit()
