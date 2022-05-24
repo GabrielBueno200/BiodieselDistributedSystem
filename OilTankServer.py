@@ -25,7 +25,6 @@ class OilTankServer(BaseComponentServer):
 
     def process_substance(self, oil_payload: dict):
         oil_amount = oil_payload["oil_amount"]
-
         self.remaining_oil += oil_amount
 
         self.log_info(f"Received {oil_amount}l of oil")
@@ -46,7 +45,7 @@ class OilTankServer(BaseComponentServer):
         if self.remaining_oil > 0:
             oil_to_transfer = 0
 
-            if self.remaining_oil >= self.oil_outflow:  # More than 0.75
+            if self.remaining_oil >= self.oil_outflow:
                 oil_to_transfer = self.oil_outflow
             else:
                 oil_to_transfer = self.remaining_oil
@@ -61,15 +60,14 @@ class OilTankServer(BaseComponentServer):
 
                 reactor_sock.sendall(json.dumps(payload_to_reactor).encode())
 
-                reactor_response = reactor_sock.recv(self.data_payload)
+                reactor_response = reactor_sock.recv(1024)
 
-                if reactor_response:
-                    reactor_state = json.loads(reactor_response.decode())
+                reactor_state = json.loads(reactor_response.decode())
 
-                    if not reactor_state["is_busy"]:
-                        self.log_info(
-                            f"transfering to reactor: {oil_to_transfer}l")
-                        self.remaining_oil -= reactor_state["total_transfered"]
+                if not reactor_state["is_processing"]:
+                    self.log_info(
+                        f"transfering to reactor: {oil_to_transfer}l")
+                    self.remaining_oil -= reactor_state["total_transfered"]
 
 
 if __name__ == "__main__":

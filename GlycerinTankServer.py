@@ -1,6 +1,6 @@
-from BaseComponentServer import BaseComponentServer
-from Enums.Ports import ServersPorts
 import sys
+from Enums.Ports import ServersPorts
+from BaseComponentServer import BaseComponentServer
 
 
 class GlycerinTankServer(BaseComponentServer):

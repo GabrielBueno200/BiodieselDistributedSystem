@@ -1,10 +1,10 @@
-from BaseComponentServer import BaseComponentServer
-from Enums.Ports import ServersPorts
-from socket import socket, AF_INET, SOCK_STREAM
+import sys
 import json
+from Enums.Ports import ServersPorts
 from Enums.Substance import SubstanceType
 from Utils.TimeUtilities import call_repeatedly
-import sys
+from socket import socket, AF_INET, SOCK_STREAM
+from BaseComponentServer import BaseComponentServer
 
 
 class EthanolTankServer(BaseComponentServer):
@@ -49,15 +49,14 @@ class EthanolTankServer(BaseComponentServer):
 
                 reactor_sock.sendall(json.dumps(payload_to_reactor).encode())
 
-                reactor_response = reactor_sock.recv(self.data_payload)
+                reactor_response = reactor_sock.recv(1024)
 
-                if reactor_response:
-                    reactor_state = json.loads(reactor_response.decode())
+                reactor_state = json.loads(reactor_response.decode())
 
-                    if not reactor_state["is_busy"]:
-                        self.log_info(
-                            f"transfering to reactor: {ethanol_to_transfer}l")
-                        self.remaining_ethanol -= reactor_state["total_transfered"]
+                if not reactor_state["is_processing"]:
+                    self.log_info(
+                        f"transfering to reactor: {ethanol_to_transfer}l")
+                    self.remaining_ethanol -= reactor_state["total_transfered"]
 
     @staticmethod
     def receive_ethanol(ethanol_tank_client_socket: socket):

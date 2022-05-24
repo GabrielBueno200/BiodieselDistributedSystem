@@ -12,7 +12,6 @@ class SecondWashingServer(BaseComponentServer):
         super().__init__(host, port)
         self.substances_outflow = 1.5
         self.loss = 0.025
-        self.product_loss = 0
         self.remaining_solution = 0
         self.cancel_future_calls = call_repeatedly(
             interval=1.5, func=self.transfer_to_third_washing)
@@ -22,13 +21,13 @@ class SecondWashingServer(BaseComponentServer):
         sys.exit(0)
 
     def get_state(self):
-        return {"occupied_capacity": self.remaining_solution,
-                "product_loss": self.product_loss}
+        return {"occupied_capacity": self.remaining_solution}
 
     def process_substance(self, solution_payload: dict) -> None:
         solution_amount = solution_payload["solution_amount"]
         self.remaining_solution += solution_amount
-        self.log_info("washing substances...")
+
+        self.log_info(f"received {solution_amount}l of solution")
 
         return self.get_state()
 
@@ -42,19 +41,18 @@ class SecondWashingServer(BaseComponentServer):
             else:
                 substances_to_transfer = self.remaining_solution
 
-            solutiion_to_send = substances_to_transfer*(1-self.loss)
-            self.product_loss += substances_to_transfer*self.loss
+            solution_to_transfer = substances_to_transfer*(1-self.loss)
 
             with socket(AF_INET, SOCK_STREAM) as component_sock:
                 component_sock.connect(
                     ("localhost", ServersPorts.third_washing))
 
                 component_sock.sendall(json.dumps(
-                    {f"{SubstanceType.SOLUTION}_amount": solutiion_to_send}).encode())
+                    {f"{SubstanceType.SOLUTION}_amount": solution_to_transfer}).encode())
 
                 self.remaining_solution -= substances_to_transfer
 
-                component_sock.recv(self.data_payload)
+                component_sock.recv(1024)
 
 
 if __name__ == "__main__":
