@@ -11,7 +11,6 @@ class BaseComponentServer(ABC):
     def __init__(self, host, port) -> None:
         self.host = host
         self.port = port
-        self.data_payload = 1024
         signal.signal(signal.SIGINT, self.signal_handler)
 
     @abstractmethod
@@ -27,20 +26,9 @@ class BaseComponentServer(ABC):
     def log_info(self, info: str):
         print(f"{self.__class__.__name__}: {info}")
 
-    def check_component_state(self, port: ServersPorts):
-        with socket(AF_INET, SOCK_STREAM) as component_sock:
-            component_sock.connect(("localhost", port))
-            component_sock.sendall("get_state".encode())
-
-            component_response = component_sock.recv(self.data_payload)
-
-            component_state = json.loads(component_response.decode())
-
-            return component_state
-
     def handle_data(self, client_connection: socket):
         while True:
-            data = client_connection.recv(self.data_payload)
+            data = client_connection.recv(1024)
 
             if data:
                 if data.decode() == "get_state":

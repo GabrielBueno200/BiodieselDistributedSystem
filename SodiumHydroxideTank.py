@@ -10,8 +10,8 @@ from BaseComponentServer import BaseComponentServer
 class SodiumHydroxideServer(BaseComponentServer):
     def __init__(self, host: str, port: int):
         super().__init__(host, port)
-        self.remaining_sodium = 0
         self.sodium_outflow = 1
+        self.remaining_sodium = 0
         self.cancel_future_calls = call_repeatedly(
             interval=1, func=self.transfer_sodium_to_reactor)
 
@@ -49,15 +49,14 @@ class SodiumHydroxideServer(BaseComponentServer):
 
                 reactor_sock.sendall(json.dumps(payload_to_reactor).encode())
 
-                reactor_response = reactor_sock.recv(self.data_payload)
+                reactor_response = reactor_sock.recv(1024)
 
-                if reactor_response:
-                    reactor_state = json.loads(reactor_response.decode())
+                reactor_state = json.loads(reactor_response.decode())
 
-                    if not reactor_state["is_busy"]:
-                        self.log_info(
-                            f"transfering to reactor: {sodium_to_transfer}l")
-                        self.remaining_sodium -= reactor_state["total_transfered"]
+                if not reactor_state["is_processing"]:
+                    self.log_info(
+                        f"transfering to reactor: {sodium_to_transfer}l")
+                    self.remaining_sodium -= reactor_state["total_transfered"]
 
     @staticmethod
     def receive_sodium(sodium_tank_client_socket: socket):

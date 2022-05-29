@@ -1,4 +1,5 @@
 import json
+import sys
 from threading import Thread
 from Enums.Ports import ServersPorts
 from prettytable import PrettyTable, ALL
@@ -7,10 +8,9 @@ from Utils.TimeUtilities import call_repeatedly
 from Utils.GeneralUtilities import clear_window
 
 from OilTankServer import OilTankServer
-from SodiumHydroxideTank import SodiumHydroxideServer
 from EthanolTankServer import EthanolTankServer
+from SodiumHydroxideTank import SodiumHydroxideServer
 
-import sys
 
 class OrchestratorClient:
     time_deposit_oil = 10
@@ -34,7 +34,6 @@ class OrchestratorClient:
     }
 
     def __init__(self) -> None:
-        self.cont = 0
         self.cancel_future_calls = call_repeatedly(
             interval=1, func=OrchestratorClient.show_components_state)
 
@@ -71,39 +70,38 @@ class OrchestratorClient:
     def show_components_state():
         if OrchestratorClient.components_state:
             clear_window()
-            all = []
+            rows = []
 
             for key, value in OrchestratorClient.components_state.items():
                 infos = ""
                 for info_name, info_value in value.items():
                     infos += f'{info_name}: {info_value}\n'
 
-                all.append([key, infos[:-1]])
+                rows.append([key, infos[:-1]])
 
             titles = ['Tank', 'Values']
 
             table = PrettyTable(titles)
             table.align['Values'] = 'l'
-            table.add_rows(all)
+            table.add_rows(rows)
             table.hrules = ALL
+
             print(table)
 
-            OrchestratorClient.cont+=1
+            OrchestratorClient.cont += 1
 
             with open('stats.txt', 'a') as convert_file:
-                convert_file.write(json.dumps(OrchestratorClient.components_state) + '\n')
+                convert_file.write(json.dumps(
+                    OrchestratorClient.components_state) + '\n')
 
-    
     def count_iterations(self):
         while OrchestratorClient.cont < 3600:
             pass
         self.cancel_future_calls()
         sys.exit()
 
-
     def start(self):
-        a = Thread(target=self.count_iterations, daemon=True)
-        a.start()
+        Thread(target=self.count_iterations, daemon=True).start()
 
         components_servers_threads: list[Thread] = []
 

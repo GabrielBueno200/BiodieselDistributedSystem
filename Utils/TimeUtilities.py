@@ -2,7 +2,7 @@ from typing import Any, Callable
 from threading import Event, Thread
 
 
-def call_repeatedly(interval: float, func: Callable[[Any], None], *args: list[Any]) -> None:
+def call_repeatedly(interval: float, func: Callable[[Any], None], *args: tuple) -> None:
     stopped = Event()
 
     def loop():
