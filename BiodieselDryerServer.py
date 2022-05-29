@@ -12,7 +12,6 @@ class BiodieselDryerServer(BaseComponentServer):
         super().__init__(host, port)
         self.substances_outflow = 1
         self.loss = 0.005
-        self.product_loss = 0
         self.remaining_solution = 0
         self.cancel_future_calls = call_repeatedly(
             interval=5, func=self.transfer_to_biodiesel_tank)

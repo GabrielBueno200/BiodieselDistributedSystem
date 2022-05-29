@@ -12,7 +12,6 @@ class ThirdWashingServer(BaseComponentServer):
         super().__init__(host, port)
         self.substances_outflow = 1.5
         self.loss = 0.025
-        self.product_loss = 0
         self.remaining_solution = 0
         self.cancel_future_calls = call_repeatedly(
             interval=1, func=self.transfer_to_biodiesel_dryer)

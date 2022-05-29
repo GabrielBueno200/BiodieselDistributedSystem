@@ -16,7 +16,6 @@ class OrchestratorClient:
     time_deposit_oil = 10
     time_deposit_ethanol = 1
     time_deposit_sodium = 1
-    cont = 0
 
     components_state = {
         "oil_tank": {},
